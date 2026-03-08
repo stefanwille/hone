@@ -16,12 +16,6 @@ const getWeatherSchema = type({
   location: "string",
 });
 
-const readFileSchema = type({
-  path: "string",
-});
-
-type readFileInput = typeof readFileSchema.infer;
-
 type getWeatherInput = typeof getWeatherSchema.infer;
 
 async function get_location(): Promise<string> {
@@ -40,23 +34,37 @@ async function get_weather({ location }: getWeatherInput): Promise<string> {
   return "Unknown location";
 }
 
-async function read_file({ path }: readFileInput): Promise<string> {
-  console.log(`Reading file from ${path}`);
-  if (path.includes("...")) {
-    return JSON.stringify({ error_message: "Bad path given" });
-  }
-  const content = await fs.readFile(path, "utf8");
-  return JSON.stringify({ file_content: content });
-}
-
-type ToolType = {
+type Tool = {
   name: string;
   description: string;
   inputSchema: type.Any;
   jsFunction: (input: any) => Promise<ToolResultBlockParam["content"]>;
 };
 
-const toolTypeTools: ToolType[] = [
+const readFileSchema = type({
+  path: "string",
+});
+
+type ReadFileInput = typeof readFileSchema.infer;
+
+const read_file: Tool = {
+  name: "read_file",
+  description:
+    "Reads a file from the file system and returns an optional error_message and the file_content if successful",
+  inputSchema: readFileSchema,
+  jsFunction: async function read_file({
+    path,
+  }: ReadFileInput): Promise<string> {
+    console.log(`Reading file from ${path}`);
+    if (path.includes("...")) {
+      return JSON.stringify({ error_message: "Bad path given" });
+    }
+    const content = await fs.readFile(path, "utf8");
+    return JSON.stringify({ file_content: content });
+  },
+};
+
+const toolTypeTools: Tool[] = [
   {
     name: "get_location",
     description: "Get the user's location",
@@ -69,16 +77,10 @@ const toolTypeTools: ToolType[] = [
     inputSchema: getWeatherSchema,
     jsFunction: get_weather,
   },
-  {
-    name: "read_file",
-    description:
-      "Reads a file from the file system and returns an optional error_message and the file_content if successful",
-    inputSchema: readFileSchema,
-    jsFunction: read_file,
-  },
+  read_file,
 ];
 
-function getTools(toolTypeTools: ToolType[]): Anthropic.Messages.ToolUnion[] {
+function convertTools(toolTypeTools: Tool[]): Anthropic.Messages.ToolUnion[] {
   return toolTypeTools.map((tool) => ({
     name: tool.name,
     description: tool.description,
@@ -86,12 +88,10 @@ function getTools(toolTypeTools: ToolType[]): Anthropic.Messages.ToolUnion[] {
   }));
 }
 
-const tools: Anthropic.Messages.ToolUnion[] = getTools(toolTypeTools);
-
 async function invokeTool(
   toolName: string,
   toolInput: any,
-  toolTypeTools: ToolType[],
+  toolTypeTools: Tool[],
 ): Promise<ToolResultBlockParam["content"]> {
   const toolTypeTool = toolTypeTools.find((tool) => tool.name === toolName);
   if (!toolTypeTool) {
@@ -164,6 +164,9 @@ async function agenticRequest(request: AgenticRequest) {
   }
 }
 async function main() {
+  const anthropicTools: Anthropic.Messages.ToolUnion[] =
+    convertTools(toolTypeTools);
+
   agenticRequest({
     messages: [
       {
@@ -171,7 +174,7 @@ async function main() {
         content: "Read the file ./.prettierrc and tellme what it says",
       },
     ],
-    tools: tools,
+    tools: anthropicTools,
     max_tokens: 1000,
     max_turns: 10,
     model: MODEL,
