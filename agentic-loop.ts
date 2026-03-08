@@ -136,23 +136,33 @@ async function agenticRequest(request: AgenticRequest) {
 
     turns++;
   }
+  return messages;
 }
 
 async function main() {
   const anthropicTools = convertTools(tools);
+  let messages: Anthropic.Messages.MessageParam[] = [];
 
-  await agenticRequest({
-    messages: [
-      {
-        role: "user",
-        content: "Read the file ./.prettierrc and tellme what it says",
-      },
-    ],
-    tools: anthropicTools,
-    max_tokens: 1000,
-    max_turns: 10,
-    model: MODEL,
-  });
+  for await (const line of console) {
+    if (!line) {
+      continue;
+    }
+
+    messages.push({
+      role: "user",
+      content: line,
+    });
+
+    messages = await agenticRequest({
+      messages,
+      tools: anthropicTools,
+      max_tokens: 1000,
+      max_turns: 10,
+      model: MODEL,
+    });
+
+    console.log(messages![messages!.length - 1]!.content);
+  }
 }
 
 main().catch(console.error);
