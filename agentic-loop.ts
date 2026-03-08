@@ -1,7 +1,18 @@
 import Anthropic from "@anthropic-ai/sdk";
 import assert from "node:assert";
 
-const tools = [
+const MODEL = "claude-haiku-4-5";
+
+const tools: Anthropic.Messages.ToolUnion[] = [
+  {
+    name: "get_location",
+    description: "Get the user's location",
+    input_schema: {
+      type: "object" as const,
+      properties: {},
+      required: [],
+    },
+  },
   {
     name: "get_weather",
     description: "Get the current weather in a given location",
@@ -18,24 +29,50 @@ const tools = [
   },
 ];
 
-const get_weather = async (location: string): Promise<string> => {
-  return "Very hot and dry, at 52 degrees Celsius.";
-};
+async function get_location(): Promise<string> {
+  console.log(`Getting location`);
+  return "Berlin, Germany";
+}
 
-const executeToolUse = async (
+async function get_weather(location: string): Promise<string> {
+  console.log(`Getting weather for ${location}`);
+  if (location === "San Francisco, CA") {
+    return "Very hot and dry, at 52 degrees Celsius.";
+  }
+  if (location === "Berlin, Germany") {
+    return "Sunny and friendly, at 16 degrees Celsius.";
+  }
+  return "Unknown location";
+}
+
+async function invokeTool(
+  toolName: string,
+  toolInput: unknown,
+): Promise<string> {
+  switch (toolName) {
+    case "get_location":
+      return await get_location();
+    case "get_weather":
+      const location = (toolInput as { location: string }).location;
+      return await get_weather(location);
+    default:
+      return `Unknown tool name: ${toolName}`;
+  }
+}
+
+async function executeToolUse(
   toolUse: Anthropic.Messages.ToolUseBlockParam,
-): Promise<Anthropic.Messages.ToolResultBlockParam> => {
+): Promise<Anthropic.Messages.ToolResultBlockParam> {
   const toolName = toolUse.name;
-  assert(toolName === "get_weather", "Expected tool name to be get_weather");
-  const toolInput = toolUse.input as { location: string };
-  const toolResponse = await get_weather(toolInput.location);
+  const toolInput = toolUse.input;
+  const toolResponse = await invokeTool(toolName, toolInput);
   const toolResult: Anthropic.Messages.ToolResultBlockParam = {
     type: "tool_result" as const,
     tool_use_id: toolUse.id,
     content: toolResponse,
   };
   return toolResult;
-};
+}
 
 async function main() {
   const anthropic = new Anthropic();
@@ -43,10 +80,11 @@ async function main() {
 
   messages.push({
     role: "user" as const,
-    content: "What is the weather in San Francisco?",
+    content:
+      "Get the user's location and the current weather in that location.",
   });
   const response0 = await anthropic.messages.create({
-    model: "claude-opus-4-6",
+    model: MODEL,
     max_tokens: 1000,
     tools: tools,
     messages,
@@ -66,7 +104,7 @@ async function main() {
   messages.push({ role: "user", content: toolResults });
 
   const response1 = await anthropic.messages.create({
-    model: "claude-opus-4-6",
+    model: MODEL,
     max_tokens: 1000,
     tools: tools,
     messages,
