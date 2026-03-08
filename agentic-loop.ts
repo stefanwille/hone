@@ -2,6 +2,7 @@ import Anthropic from "@anthropic-ai/sdk";
 import assert from "node:assert";
 import { type } from "arktype";
 import type { ToolResultBlockParam } from "@anthropic-ai/sdk/resources";
+import fs from "node:fs/promises";
 
 const MODEL = "claude-haiku-4-5";
 
@@ -14,6 +15,12 @@ const getLocationSchema = type({
 const getWeatherSchema = type({
   location: "string",
 });
+
+const readFileSchema = type({
+  path: "string",
+});
+
+type readFileInput = typeof readFileSchema.infer;
 
 type getWeatherInput = typeof getWeatherSchema.infer;
 
@@ -31,6 +38,15 @@ async function get_weather({ location }: getWeatherInput): Promise<string> {
     return "Sunny and friendly, at 16 degrees Celsius.";
   }
   return "Unknown location";
+}
+
+async function read_file({ path }: readFileInput): Promise<string> {
+  console.log(`Reading file from ${path}`);
+  if (path.includes("...")) {
+    return JSON.stringify({ error_message: "Bad path given" });
+  }
+  const content = await fs.readFile(path, "utf8");
+  return JSON.stringify({ file_content: content });
 }
 
 type ToolType = {
@@ -52,6 +68,13 @@ const toolTypeTools: ToolType[] = [
     description: "Get the current weather in a given location",
     inputSchema: getWeatherSchema,
     jsFunction: get_weather,
+  },
+  {
+    name: "read_file",
+    description:
+      "Reads a file from the file system and returns an optional error_message and the file_content if successful",
+    inputSchema: readFileSchema,
+    jsFunction: read_file,
   },
 ];
 
@@ -91,22 +114,26 @@ async function executeToolUse(
   return toolResult;
 }
 
-async function main() {
+type AgenticRequest = {
+  messages: Anthropic.Messages.MessageParam[];
+  tools: Anthropic.Messages.ToolUnion[];
+  max_tokens: number;
+  max_turns: number;
+  model: string;
+};
+
+async function agenticRequest(request: AgenticRequest) {
   let turns = 0;
   const anthropic = new Anthropic();
   const messages: Anthropic.Messages.MessageParam[] = [];
 
-  messages.push({
-    role: "user" as const,
-    content:
-      "Get the user's location and the current weather in that location.",
-  });
+  messages.push(...request.messages);
 
-  while (turns < 10) {
+  while (turns < request.max_turns) {
     const response = await anthropic.messages.create({
-      model: MODEL,
-      max_tokens: 1000,
-      tools: tools,
+      model: request.model,
+      max_tokens: request.max_tokens,
+      tools: request.tools,
       messages,
     });
     console.log("response 0:", response);
@@ -135,8 +162,20 @@ async function main() {
 
     turns++;
   }
-
-  // console.log("Final messages:", messages);
+}
+async function main() {
+  agenticRequest({
+    messages: [
+      {
+        role: "user",
+        content: "Read the file ./.prettierrc and tellme what it says",
+      },
+    ],
+    tools: tools,
+    max_tokens: 1000,
+    max_turns: 10,
+    model: MODEL,
+  });
 }
 
 main().catch(console.error);
