@@ -2,37 +2,8 @@ import Anthropic from "@anthropic-ai/sdk";
 import assert from "node:assert";
 import { type } from "arktype";
 import type { ToolResultBlockParam } from "@anthropic-ai/sdk/resources";
-import fs from "node:fs/promises";
 
 const MODEL = "claude-haiku-4-5";
-
-const getLocationSchema = type({
-  type: "object",
-  properties: {},
-  required: [],
-});
-
-const getWeatherSchema = type({
-  location: "string",
-});
-
-type getWeatherInput = typeof getWeatherSchema.infer;
-
-async function get_location(): Promise<string> {
-  console.log(`Getting location`);
-  return "Berlin, Germany";
-}
-
-async function get_weather({ location }: getWeatherInput): Promise<string> {
-  console.log(`Getting weather for ${location}`);
-  if (location === "San Francisco, CA") {
-    return "Very hot and dry, at 52 degrees Celsius.";
-  }
-  if (location === "Berlin, Germany") {
-    return "Sunny and friendly, at 16 degrees Celsius.";
-  }
-  return "Unknown location";
-}
 
 type Tool = {
   name: string;
@@ -41,77 +12,88 @@ type Tool = {
   jsFunction: (input: any) => Promise<ToolResultBlockParam["content"]>;
 };
 
+const get_location: Tool = {
+  name: "get_location",
+  description: "Get the user's location",
+  inputSchema: type({}),
+  jsFunction: async () => {
+    console.log("Getting location");
+    return "Berlin, Germany";
+  },
+};
+
+const getWeatherSchema = type({
+  location: "string",
+});
+
+const get_weather: Tool = {
+  name: "get_weather",
+  description: "Get the current weather in a given location",
+  inputSchema: getWeatherSchema,
+  jsFunction: async ({ location }: typeof getWeatherSchema.infer) => {
+    console.log(`Getting weather for ${location}`);
+    if (location === "San Francisco, CA") {
+      return "Very hot and dry, at 52 degrees Celsius.";
+    }
+    if (location === "Berlin, Germany") {
+      return "Sunny and friendly, at 16 degrees Celsius.";
+    }
+    return "Unknown location";
+  },
+};
+
 const readFileSchema = type({
   path: "string",
 });
-
-type ReadFileInput = typeof readFileSchema.infer;
 
 const read_file: Tool = {
   name: "read_file",
   description:
     "Reads a file from the file system and returns an optional error_message and the file_content if successful",
   inputSchema: readFileSchema,
-  jsFunction: async function read_file({
-    path,
-  }: ReadFileInput): Promise<string> {
+  jsFunction: async ({ path }: typeof readFileSchema.infer) => {
     console.log(`Reading file from ${path}`);
     if (path.includes("...")) {
       return JSON.stringify({ error_message: "Bad path given" });
     }
-    const content = await fs.readFile(path, "utf8");
-    return JSON.stringify({ file_content: content });
+    try {
+      const content = await Bun.file(path).text();
+      return JSON.stringify({ file_content: content });
+    } catch (e) {
+      return JSON.stringify({
+        error_message: `Failed to read file: ${e instanceof Error ? e.message : e}`,
+      });
+    }
   },
 };
 
-const toolTypeTools: Tool[] = [
-  {
-    name: "get_location",
-    description: "Get the user's location",
-    inputSchema: getLocationSchema,
-    jsFunction: get_location,
-  },
-  {
-    name: "get_weather",
-    description: "Get the current weather in a given location",
-    inputSchema: getWeatherSchema,
-    jsFunction: get_weather,
-  },
-  read_file,
-];
+const tools: Tool[] = [get_location, get_weather, read_file];
 
-function convertTools(toolTypeTools: Tool[]): Anthropic.Messages.ToolUnion[] {
-  return toolTypeTools.map((tool) => ({
+function convertTools(tools: Tool[]): Anthropic.Messages.ToolUnion[] {
+  return tools.map((tool) => ({
     name: tool.name,
     description: tool.description,
     input_schema: tool.inputSchema.toJsonSchema() as any,
   }));
 }
 
-async function invokeTool(
-  toolName: string,
-  toolInput: any,
-  toolTypeTools: Tool[],
-): Promise<ToolResultBlockParam["content"]> {
-  const toolTypeTool = toolTypeTools.find((tool) => tool.name === toolName);
-  if (!toolTypeTool) {
-    return `Unknown tool name: ${toolName}`;
-  }
-  return await toolTypeTool.jsFunction(toolInput);
-}
-
 async function executeToolUse(
   toolUse: Anthropic.Messages.ToolUseBlockParam,
 ): Promise<Anthropic.Messages.ToolResultBlockParam> {
-  const toolName = toolUse.name;
-  const toolInput = toolUse.input;
-  const toolResponse = await invokeTool(toolName, toolInput, toolTypeTools);
-  const toolResult: Anthropic.Messages.ToolResultBlockParam = {
-    type: "tool_result" as const,
+  const tool = tools.find((t) => t.name === toolUse.name);
+  if (!tool) {
+    return {
+      type: "tool_result",
+      tool_use_id: toolUse.id,
+      content: `Unknown tool name: ${toolUse.name}`,
+    };
+  }
+  const content = await tool.jsFunction(toolUse.input);
+  return {
+    type: "tool_result",
     tool_use_id: toolUse.id,
-    content: toolResponse,
+    content,
   };
-  return toolResult;
 }
 
 type AgenticRequest = {
@@ -125,9 +107,7 @@ type AgenticRequest = {
 async function agenticRequest(request: AgenticRequest) {
   let turns = 0;
   const anthropic = new Anthropic();
-  const messages: Anthropic.Messages.MessageParam[] = [];
-
-  messages.push(...request.messages);
+  const messages: Anthropic.Messages.MessageParam[] = [...request.messages];
 
   while (turns < request.max_turns) {
     const response = await anthropic.messages.create({
@@ -136,8 +116,6 @@ async function agenticRequest(request: AgenticRequest) {
       tools: request.tools,
       messages,
     });
-    console.log("response 0:", response);
-    console.log("--------------------------------");
     messages.push({ role: response.role, content: response.content });
 
     if (
@@ -149,25 +127,21 @@ async function agenticRequest(request: AgenticRequest) {
 
     assert(response.stop_reason === "tool_use", "Expected tool use in content");
 
-    const toolResults: Anthropic.Messages.ToolResultBlockParam[] = [];
-
-    for (const content of response.content) {
-      if (content.type === "tool_use") {
-        const toolResult = await executeToolUse(content);
-        toolResults.push(toolResult);
-      }
-    }
+    const toolUses = response.content.filter(
+      (c): c is Anthropic.Messages.ToolUseBlock => c.type === "tool_use",
+    );
+    const toolResults = await Promise.all(toolUses.map(executeToolUse));
 
     messages.push({ role: "user", content: toolResults });
 
     turns++;
   }
 }
-async function main() {
-  const anthropicTools: Anthropic.Messages.ToolUnion[] =
-    convertTools(toolTypeTools);
 
-  agenticRequest({
+async function main() {
+  const anthropicTools = convertTools(tools);
+
+  await agenticRequest({
     messages: [
       {
         role: "user",
