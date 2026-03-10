@@ -4,7 +4,9 @@ function printUsage() {
   console.log("Fibonacci Calculator CLI");
   console.log("=======================");
   console.log("\nUsage:");
-  console.log("  bun cli.ts <number>    Calculate the Fibonacci number for the given index");
+  console.log(
+    "  bun cli.ts <number>    Calculate the Fibonacci number for the given index",
+  );
   console.log("  bun cli.ts --help      Show this help message");
   console.log("\nExamples:");
   console.log("  bun cli.ts 10          # Calculate Fibonacci(10)");
@@ -21,7 +23,7 @@ function main() {
   }
 
   const input = args[0];
-  const n = parseInt(input, 10);
+  const n = parseInt(input!, 10);
 
   if (isNaN(n)) {
     console.error(`Error: '${input}' is not a valid number`);

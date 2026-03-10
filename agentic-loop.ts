@@ -4,7 +4,7 @@ import { createAgentSession, type AgentSession } from "./agent-session";
 import { type BashToolInput } from "./BashTool";
 import { loadHistory, saveHistory } from "./history";
 import { renderMarkdown, renderToolFrame } from "./render-markdown";
-import { TOOLS, type ToolResult } from "./tools";
+import { type ToolResult } from "./tools";
 
 const MODEL = "claude-sonnet-4-6";
 
@@ -29,7 +29,7 @@ async function executeToolUse(
       result = `Error: ${(err as Error).message}`;
     }
   } else {
-    const tool = TOOLS.find((t) => t.name === toolUse.name);
+    const tool = session.tools.find((t) => t.name === toolUse.name);
     if (!tool) {
       return {
         type: "tool_result",
@@ -69,7 +69,7 @@ async function agentRequest(request: string, session: AgentSession) {
           model: session.model,
           max_tokens: session.max_tokens,
           system: session.system || undefined,
-          tools: session.tools,
+          tools: session.anthropicTools,
           messages: session.messages,
         });
       } catch (err) {

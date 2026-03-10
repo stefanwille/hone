@@ -1,13 +1,14 @@
 import type Anthropic from "@anthropic-ai/sdk";
 import { BashSession } from "./BashTool";
 import { loadSystemPrompt } from "./system-prompt";
-import { TOOLS, type Tool } from "./tools";
+import { createTools, type Tool } from "./tools";
 
 export type AgentSession = {
   messages: Anthropic.Messages.MessageParam[];
   // System prompt
   system?: string;
-  tools: Anthropic.Messages.ToolUnion[];
+  tools: Tool[];
+  anthropicTools: Anthropic.Messages.ToolUnion[];
   bashSession: BashSession;
   max_tokens: number;
   max_turns: number;
@@ -25,12 +26,14 @@ function convertTools(tools: Tool[]): Anthropic.Messages.ToolUnion[] {
 }
 
 export async function createAgentSession(model: string): Promise<AgentSession> {
-  const anthropicTools = convertTools(TOOLS);
+  const tools = createTools();
+  const anthropicTools = convertTools(tools);
   const systemPrompt = await loadSystemPrompt();
   const session: AgentSession = {
     messages: [],
     system: systemPrompt,
-    tools: anthropicTools,
+    tools,
+    anthropicTools,
     max_tokens: 8192,
     max_turns: 10,
     model,

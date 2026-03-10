@@ -42,4 +42,6 @@ const get_weather: Tool = {
   },
 };
 
-export const TOOLS: Tool[] = [get_location, get_weather];
+export function createTools(): Tool[] {
+  return [get_location, get_weather];
+}
