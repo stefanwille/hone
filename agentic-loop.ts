@@ -15,6 +15,14 @@ const MODEL = "claude-haiku-4-5";
 const HISTORY_FILE = "history.txt";
 const MAX_HISTORY_LINES = 200;
 
+async function loadSystemPrompt(): Promise<string> {
+  try {
+    const file = Bun.file("CLAUDE.md");
+    if (await file.exists()) return await file.text();
+  } catch {}
+  return "";
+}
+
 async function loadHistory(): Promise<string[]> {
   try {
     const file = Bun.file(HISTORY_FILE);
@@ -90,6 +98,7 @@ async function executeToolUse(
 
 type AgentRequest = {
   messages: Anthropic.Messages.MessageParam[];
+  system?: string;
   tools: Anthropic.Messages.ToolUnion[];
   max_tokens: number;
   max_turns: number;
@@ -104,6 +113,7 @@ async function agentRequest(request: AgentRequest) {
     const response = await anthropic.messages.create({
       model: request.model,
       max_tokens: request.max_tokens,
+      system: request.system || undefined,
       tools: request.tools,
       messages,
     });
@@ -162,6 +172,7 @@ function createPrompt(history: string[]): {
 
 async function main() {
   const anthropicTools = convertTools(tools);
+  const systemPrompt = await loadSystemPrompt();
   let messages: Anthropic.Messages.MessageParam[] = [];
   const history = await loadHistory();
   const { ask, getHistory } = createPrompt(history);
@@ -181,6 +192,7 @@ async function main() {
 
     messages = await agentRequest({
       messages,
+      system: systemPrompt,
       tools: anthropicTools,
       max_tokens: 1000,
       max_turns: 10,
