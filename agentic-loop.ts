@@ -21,7 +21,7 @@ async function executeToolUse(
     try {
       if (input.restart) {
         session.bashSession.restart();
-        result = "Bash baseSession restarted.";
+        result = "Bash session restarted.";
       } else {
         result = await session.bashSession.run(input.command, input.timeout);
       }
@@ -84,7 +84,6 @@ async function agentRequest(line: string, session: AgentSession) {
 
     turns++;
   }
-  return session.messages;
 }
 
 function createPrompt(history: string[]): {
@@ -130,7 +129,7 @@ async function main() {
     if (!line) continue;
     await saveHistory(getHistory());
 
-    session.messages = await agentRequest(line, session);
+    await agentRequest(line, session);
 
     const lastContent = session.messages.at(-1)!.content;
     if (Array.isArray(lastContent)) {

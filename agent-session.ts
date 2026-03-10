@@ -27,7 +27,6 @@ function convertTools(tools: Tool[]): Anthropic.Messages.ToolUnion[] {
 export async function createAgentSession(model: string): Promise<AgentSession> {
   const anthropicTools = convertTools(TOOLS);
   const systemPrompt = await loadSystemPrompt();
-  let messages: Anthropic.Messages.MessageParam[] = [];
   const session: AgentSession = {
     messages: [],
     system: systemPrompt,
