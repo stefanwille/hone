@@ -51,14 +51,13 @@ async function executeToolUse(
   };
 }
 
-async function agentRequest(line: string, session: AgentSession) {
+async function agentRequest(request: string, session: AgentSession) {
   session.messages.push({
     role: "user",
-    content: line,
+    content: request,
   });
 
-  let looping = true;
-  for (let turns = 0; turns < session.max_turns && looping; turns++) {
+  for (let turns = 0; turns < session.max_turns; turns++) {
     let response: Anthropic.Messages.Message;
     try {
       response = await anthropic.messages.create({
@@ -76,8 +75,7 @@ async function agentRequest(line: string, session: AgentSession) {
       } else {
         console.error(`API error: ${(err as Error).message}`);
       }
-      looping = false;
-      break;
+      return;
     }
     session.messages.push({ role: response.role, content: response.content });
 
@@ -89,18 +87,15 @@ async function agentRequest(line: string, session: AgentSession) {
 
     switch (response.stop_reason) {
       case "end_turn":
-        looping = false;
-        break;
+        return;
       case "max_tokens":
         console.log(
           "We exceeded the requested max_tokens or the model's maximum, stopping conversation",
         );
-        looping = false;
-        break;
+        return;
       case "stop_sequence":
         console.log("Stop sequence reached, stopping conversation");
-        looping = false;
-        break;
+        return;
       case "tool_use":
         const toolUses = response.content.filter(
           (c): c is Anthropic.Messages.ToolUseBlock => c.type === "tool_use",
@@ -111,29 +106,25 @@ async function agentRequest(line: string, session: AgentSession) {
         }
         session.messages.push({ role: "user", content: toolResults });
         // Continue looping to process the next tool use
-        looping = true;
         break;
       case "pause_turn":
         // We paused a long-running turn. You may provide the response back as-is in a subsequent request to let the model continue.
         console.log("Paused turn");
-        looping = true;
         break;
       case "refusal":
         // When streaming classifiers intervene to handle potential policy violations
         console.log("Refusal, stopping conversation");
-        looping = false;
-        break;
+        return;
       default:
         console.log(
           `Unknown stop reason ${response.stop_reason}, stopping conversation`,
         );
-        looping = false;
-        break;
+        return;
     }
   }
 }
 
-function createPromptUser(history: string[]): {
+function createREPL(history: string[]): {
   promptUser: (prompt: string) => Promise<string | null>;
   getHistory: () => string[];
 } {
@@ -170,7 +161,7 @@ function createPromptUser(history: string[]): {
 async function main() {
   const history = await loadHistory();
   const session = await createAgentSession(MODEL);
-  const { promptUser, getHistory } = createPromptUser(history);
+  const { promptUser, getHistory } = createREPL(history);
 
   for (;;) {
     const line = await promptUser("> ");
