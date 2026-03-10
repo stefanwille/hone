@@ -12,6 +12,26 @@ import {
 import { renderMarkdown, renderToolFrame } from "./render-markdown";
 
 const MODEL = "claude-haiku-4-5";
+const HISTORY_FILE = "history.txt";
+const MAX_HISTORY_LINES = 200;
+
+async function loadHistory(): Promise<string[]> {
+  try {
+    const file = Bun.file(HISTORY_FILE);
+    if (await file.exists()) {
+      const text = await file.text();
+      return text.split("\n").filter(Boolean).slice(-MAX_HISTORY_LINES);
+    }
+  } catch {}
+  return [];
+}
+
+async function saveHistory(lines: string[]) {
+  await Bun.write(
+    HISTORY_FILE,
+    lines.slice(-MAX_HISTORY_LINES).join("\n") + "\n",
+  );
+}
 
 const tools: Tool[] = [get_location, get_weather, read_file];
 
@@ -110,31 +130,42 @@ async function agentRequest(request: AgentRequest) {
   return messages;
 }
 
-function createPrompt(): (prompt: string) => Promise<string | null> {
+function createPrompt(history: string[]): {
+  ask: (prompt: string) => Promise<string | null>;
+  getHistory: () => string[];
+} {
   const rl = createInterface({
     input: process.stdin,
     output: process.stdout,
     terminal: true,
+    history,
   });
 
-  return (prompt: string) =>
-    new Promise<string | null>((resolve) => {
-      rl.once("close", () => resolve(null));
-      rl.question(prompt, (answer) => {
-        rl.removeAllListeners("close");
-        resolve(answer);
-      });
-    });
+  return {
+    ask: (prompt: string) =>
+      new Promise<string | null>((resolve) => {
+        rl.once("close", () => resolve(null));
+        rl.question(prompt, (answer) => {
+          rl.removeAllListeners("close");
+          resolve(answer);
+        });
+      }),
+    getHistory: () => (rl as any).history as string[],
+  };
 }
 
 async function main() {
   const anthropicTools = convertTools(tools);
   let messages: Anthropic.Messages.MessageParam[] = [];
-  const ask = createPrompt();
+  const history = await loadHistory();
+  const { ask, getHistory } = createPrompt(history);
 
   for (;;) {
     const line = await ask("> ");
-    if (line === null) break;
+    if (line === null) {
+      await saveHistory(getHistory());
+      break;
+    }
     if (!line) continue;
 
     messages.push({
