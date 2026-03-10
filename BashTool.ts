@@ -7,7 +7,7 @@ export type BashToolInput =
 export class BashSession {
   private process: ChildProcessWithoutNullStreams;
   private outputBuffer = "";
-  private readonly SENTINEL = "__DONE__";
+  private readonly SENTINEL = `DONE_${crypto.randomUUID().replace(/-/g, "")}`;
 
   constructor() {
     this.process = spawn("bash", [], { env: process.env });
