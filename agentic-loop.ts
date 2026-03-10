@@ -59,13 +59,26 @@ async function agentRequest(line: string, session: AgentSession) {
 
   let looping = true;
   for (let turns = 0; turns < session.max_turns && looping; turns++) {
-    const response = await anthropic.messages.create({
-      model: session.model,
-      max_tokens: session.max_tokens,
-      system: session.system || undefined,
-      tools: session.tools,
-      messages: session.messages,
-    });
+    let response: Anthropic.Messages.Message;
+    try {
+      response = await anthropic.messages.create({
+        model: session.model,
+        max_tokens: session.max_tokens,
+        system: session.system || undefined,
+        tools: session.tools,
+        messages: session.messages,
+      });
+    } catch (err) {
+      if (err instanceof Anthropic.RateLimitError) {
+        console.error("Rate limited, try again in a moment");
+      } else if (err instanceof Anthropic.APIConnectionError) {
+        console.error("Connection failed, check your network");
+      } else {
+        console.error(`API error: ${(err as Error).message}`);
+      }
+      looping = false;
+      break;
+    }
     session.messages.push({ role: response.role, content: response.content });
 
     for (const block of response.content) {
@@ -102,8 +115,8 @@ async function agentRequest(line: string, session: AgentSession) {
         break;
       case "pause_turn":
         // We paused a long-running turn. You may provide the response back as-is in a subsequent request to let the model continue.
-        console.log("Paused turn, stopping conversation");
-        looping = false;
+        console.log("Paused turn");
+        looping = true;
         break;
       case "refusal":
         // When streaming classifiers intervene to handle potential policy violations
