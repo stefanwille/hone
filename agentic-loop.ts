@@ -24,6 +24,7 @@ function convertTools(tools: Tool[]): Anthropic.Messages.ToolUnion[] {
   return convertedTools;
 }
 
+const anthropic = new Anthropic();
 const bashSession = new BashSession();
 
 async function executeToolUse(
@@ -38,11 +39,7 @@ async function executeToolUse(
         bashSession.restart();
         result = "Bash baseSession restarted.";
       } else {
-        const { command, timeout } = toolUse.input as {
-          command: string;
-          timeout?: number;
-        };
-        result = await bashSession.run(command, timeout);
+        result = await bashSession.run(input.command, input.timeout);
       }
     } catch (err) {
       result = `Error: ${(err as Error).message}`;
@@ -70,7 +67,7 @@ async function executeToolUse(
   };
 }
 
-type AgentRequet = {
+type AgentRequest = {
   messages: Anthropic.Messages.MessageParam[];
   tools: Anthropic.Messages.ToolUnion[];
   max_tokens: number;
@@ -78,9 +75,8 @@ type AgentRequet = {
   model: string;
 };
 
-async function agentRequest(request: AgentRequet) {
+async function agentRequest(request: AgentRequest) {
   let turns = 0;
-  const anthropic = new Anthropic();
   const messages: Anthropic.Messages.MessageParam[] = [...request.messages];
 
   while (turns < request.max_turns) {
@@ -139,10 +135,8 @@ async function main() {
       model: MODEL,
     });
 
-    const lastContent = messages![messages!.length - 1]!.content;
-    if (typeof lastContent === "string") {
-      console.log(renderMarkdown(lastContent));
-    } else if (Array.isArray(lastContent)) {
+    const lastContent = messages.at(-1)!.content;
+    if (Array.isArray(lastContent)) {
       for (const block of lastContent) {
         if (block.type === "text") {
           console.log(renderMarkdown(block.text));

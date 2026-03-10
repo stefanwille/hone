@@ -38,9 +38,7 @@ export function formatInline(text: string): string {
   );
 
   // Restore inline code
-  for (let i = 0; i < codeSegments.length; i++) {
-    text = text.replace(`\x00CODE${i}\x00`, codeSegments[i]!);
-  }
+  text = text.replace(/\x00CODE(\d+)\x00/g, (_m, idx) => codeSegments[+idx]!);
 
   return text;
 }
@@ -188,10 +186,11 @@ export function renderMarkdown(markdown: string): string {
     flushTable();
 
     // Code fence
-    if (line.trimStart().startsWith("```")) {
+    const trimmed = line.trimStart();
+    if (trimmed.startsWith("```")) {
       if (!inCodeBlock) {
         inCodeBlock = true;
-        codeLang = line.trimStart().slice(3).trim();
+        codeLang = trimmed.slice(3).trim();
         output.push(
           DIM + "┌─" + (codeLang ? " " + codeLang + " " : "") + "─" + RESET,
         );
