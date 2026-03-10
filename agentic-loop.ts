@@ -1,5 +1,4 @@
 import Anthropic from "@anthropic-ai/sdk";
-import assert from "node:assert";
 import { createInterface } from "node:readline";
 import { BashSession, type BashToolInput } from "./BashTool";
 import {
@@ -16,11 +15,28 @@ const HISTORY_FILE = "history.txt";
 const MAX_HISTORY_LINES = 200;
 
 async function loadSystemPrompt(): Promise<string> {
+  const prompts: string[] = [];
+
+  // Load ~/.claude/CLAUDE.md
+  try {
+    const homeDir = Bun.env.HOME || Bun.env.USERPROFILE;
+    if (homeDir) {
+      const globalFile = Bun.file(`${homeDir}/.claude/CLAUDE.md`);
+      if (await globalFile.exists()) {
+        prompts.push(await globalFile.text());
+      }
+    }
+  } catch {}
+
+  // Load ./CLAUDE.md (current working directory)
   try {
     const file = Bun.file("CLAUDE.md");
-    if (await file.exists()) return await file.text();
+    if (await file.exists()) {
+      prompts.push(await file.text());
+    }
   } catch {}
-  return "";
+
+  return prompts.join("\n\n");
 }
 
 async function loadHistory(): Promise<string[]> {
@@ -119,14 +135,9 @@ async function agentRequest(request: AgentRequest) {
     });
     messages.push({ role: response.role, content: response.content });
 
-    if (
-      response.stop_reason === "end_turn" ||
-      response.stop_reason === "stop_sequence"
-    ) {
+    if (response.stop_reason !== "tool_use") {
       break;
     }
-
-    assert(response.stop_reason === "tool_use", "Expected tool use in content");
 
     const toolUses = response.content.filter(
       (c): c is Anthropic.Messages.ToolUseBlock => c.type === "tool_use",
@@ -197,7 +208,7 @@ async function main() {
       messages,
       system: systemPrompt,
       tools: anthropicTools,
-      max_tokens: 1000,
+      max_tokens: 8192,
       max_turns: 10,
       model: MODEL,
     });

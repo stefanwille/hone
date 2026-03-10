@@ -1,3 +1,6 @@
+Change agent-loop.ts such that it loads ~/.claude/CLAUDE.md and then the CLAUDE.md from the cwd, just like claude code does. 
+What are the conventions in this project?
+what is this project
 Commit.
 Run the tests in the current work directory again.
 Run the tests in the current work directory.
