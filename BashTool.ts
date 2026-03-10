@@ -22,18 +22,22 @@ export class BashSession {
     this.process.stdin.write(`${command}\necho "${this.SENTINEL}"\n`);
 
     return new Promise((resolve, reject) => {
+      let poll: ReturnType<typeof setInterval>;
+
       const timer = setTimeout(() => {
+        clearInterval(poll);
+        this.restart();
         reject(new Error(`Command timed out after ${timeoutMs}ms`));
       }, timeoutMs);
 
-      const poll = setInterval(() => {
+      poll = setInterval(() => {
         if (this.outputBuffer.includes(this.SENTINEL)) {
           clearInterval(poll);
           clearTimeout(timer);
           const output = this.outputBuffer
             .replace(this.SENTINEL + "\n", "")
             .trim();
-          resolve(output.slice(0, 30_000)); // match Claude Code's truncation
+          resolve(output.slice(0, 30_000));
         }
       }, 50);
     });
