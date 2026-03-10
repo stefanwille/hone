@@ -16,7 +16,7 @@ bun test render-markdown      # Run tests for a specific file
 
 ## Architecture
 
-**agentic-loop.ts** — Main loop. `agentRequest()` sends messages to Claude, processes tool calls in a while loop (max 10 turns), accumulates message history. Tool calls within a turn run in parallel via `Promise.all`. The REPL in `main()` manages multi-turn conversation.
+**agentic-loop.ts** — Main loop. `agentRequest()` sends messages to Claude, processes tool calls in a while loop (max 10 turns), accumulates message history. Tool calls within a turn run sequentially. The REPL in `main()` manages multi-turn conversation.
 
 **BashTool.ts** — Persistent bash session. Spawns a single bash process, writes commands + sentinel marker, polls stdout for the sentinel. 120s default timeout, 30KB output limit. Supports restart.
 

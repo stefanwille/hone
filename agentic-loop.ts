@@ -131,7 +131,10 @@ async function agentRequest(request: AgentRequest) {
     const toolUses = response.content.filter(
       (c): c is Anthropic.Messages.ToolUseBlock => c.type === "tool_use",
     );
-    const toolResults = await Promise.all(toolUses.map(executeToolUse));
+    const toolResults: Anthropic.Messages.ToolResultBlockParam[] = [];
+    for (const toolUse of toolUses) {
+      toolResults.push(await executeToolUse(toolUse));
+    }
 
     messages.push({ role: "user", content: toolResults });
 
