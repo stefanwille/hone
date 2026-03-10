@@ -9,8 +9,8 @@ export type Tool = {
   name: string;
   description: string;
   inputSchema?: type.Any;
-  run: (input: any) => Promise<ToolResult>;
   type?: Anthropic.Messages.ToolUnion["type"];
+  run: (input: any) => Promise<ToolResult>;
 };
 
 const get_location: Tool = {
