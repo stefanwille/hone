@@ -5,8 +5,6 @@ import { loadHistory, saveHistory } from "./history";
 import { renderMarkdown, renderToolFrame } from "./render-markdown";
 import { type ToolResult } from "./tools";
 
-const MODEL = "claude-sonnet-4-6";
-
 const anthropic = new Anthropic();
 
 async function executeToolUse(
@@ -47,12 +45,12 @@ async function agentRequest(request: string, session: AgentSession) {
       content: request,
     });
 
-    for (let turns = 0; turns < session.max_turns; turns++) {
+    for (let turns = 0; turns < session.maxTurns; turns++) {
       let response: Anthropic.Messages.Message;
       try {
         response = await anthropic.messages.create({
           model: session.model,
-          max_tokens: session.max_tokens,
+          max_tokens: session.maxTokens,
           system: session.system || undefined,
           tools: session.anthropicTools,
           messages: session.messages,
@@ -87,15 +85,14 @@ async function agentRequest(request: string, session: AgentSession) {
           console.log("Stop sequence reached, stopping conversation");
           return;
         case "tool_use":
-          const toolUses = response.content.filter(
-            (c): c is Anthropic.Messages.ToolUseBlock => c.type === "tool_use",
-          );
           const toolResults: Anthropic.Messages.ToolResultBlockParam[] = [];
-          for (const toolUse of toolUses) {
-            toolResults.push(await executeToolUse(toolUse, session));
+          for (const block of response.content) {
+            if (block.type === "tool_use") {
+              toolResults.push(await executeToolUse(block, session));
+            }
           }
           session.messages.push({ role: "user", content: toolResults });
-          // Continue looping to process the next tool use
+          // Continue looping to allow the LLM to process the tool results
           break;
         case "pause_turn":
           // We paused a long-running turn. You may provide the response back as-is in a subsequent request to let the model continue.
@@ -161,7 +158,7 @@ function createREPL(history: string[]): {
 
 async function main() {
   const history = await loadHistory();
-  const session = await createAgentSession(MODEL);
+  const session = await createAgentSession();
   const { promptUser, getHistory } = createREPL(history);
 
   for (;;) {

@@ -9,10 +9,12 @@ export type AgentSession = {
   system?: string;
   tools: Tool[];
   anthropicTools: Anthropic.Messages.ToolUnion[];
-  max_tokens: number;
-  max_turns: number;
+  maxTokens: number;
+  maxTurns: number;
   model: string;
 };
+
+const MODEL = "claude-sonnet-4-6";
 
 function convertTools(tools: Tool[]): Anthropic.Messages.ToolUnion[] {
   const convertedTools: Anthropic.Messages.ToolUnion[] = tools.map((tool) => {
@@ -31,17 +33,22 @@ function convertTools(tools: Tool[]): Anthropic.Messages.ToolUnion[] {
   return convertedTools;
 }
 
-export async function createAgentSession(model: string): Promise<AgentSession> {
+export async function createAgentSession(options?: {
+  model: string;
+  maxTokens: number;
+  maxTurns: number;
+}): Promise<AgentSession> {
+  const { model = MODEL, maxTokens = 8192, maxTurns = 20 } = options ?? {};
   const tools = createTools(new BashSession());
   const anthropicTools = convertTools(tools);
-  const systemPrompt = await loadSystemPrompt();
+  const system = await loadSystemPrompt();
   const session: AgentSession = {
     messages: [],
-    system: systemPrompt,
+    system,
     tools,
     anthropicTools,
-    max_tokens: 8192,
-    max_turns: 20,
+    maxTokens,
+    maxTurns,
     model,
   };
   return session;
