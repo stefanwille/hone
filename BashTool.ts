@@ -1,5 +1,9 @@
 import { spawn, type ChildProcessWithoutNullStreams } from "child_process";
 
+export type BashToolInput =
+  | { command: string; timeout?: number; restart?: never }
+  | { restart: true; command?: never; timeout?: never };
+
 export class BashSession {
   private process: ChildProcessWithoutNullStreams;
   private outputBuffer = "";

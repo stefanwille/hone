@@ -1,72 +1,15 @@
 import Anthropic from "@anthropic-ai/sdk";
 import assert from "node:assert";
-import { type } from "arktype";
-import type { ToolResultBlockParam } from "@anthropic-ai/sdk/resources";
+import { BashSession, type BashToolInput } from "./BashTool";
+import {
+  type Tool,
+  type ToolResult,
+  get_location,
+  get_weather,
+  read_file,
+} from "./tools";
 
 const MODEL = "claude-haiku-4-5";
-
-type Tool = {
-  name: string;
-  description: string;
-  inputSchema: type.Any;
-  jsFunction: (input: any) => Promise<ToolResultBlockParam["content"]>;
-  type?: Anthropic.Messages.ToolUnion["type"];
-};
-
-const get_location: Tool = {
-  name: "get_location",
-  description: "Get the user's location",
-  inputSchema: type({}),
-  jsFunction: async () => {
-    console.log("Getting location");
-    return "Berlin, Germany";
-  },
-};
-
-const getWeatherSchema = type({
-  location: "string",
-});
-
-const get_weather: Tool = {
-  name: "get_weather",
-  description: "Get the current weather in a given location",
-  inputSchema: getWeatherSchema,
-  jsFunction: async ({ location }: typeof getWeatherSchema.infer) => {
-    console.log(`Getting weather for ${location}`);
-    if (location === "San Francisco, CA") {
-      return "Very hot and dry, at 52 degrees Celsius.";
-    }
-    if (location === "Berlin, Germany") {
-      return "Sunny and friendly, at 16 degrees Celsius.";
-    }
-    return "Unknown location";
-  },
-};
-
-const readFileSchema = type({
-  path: "string",
-});
-
-const read_file: Tool = {
-  name: "read_file",
-  description:
-    "Reads a file from the file system and returns an optional error_message and the file_content if successful",
-  inputSchema: readFileSchema,
-  jsFunction: async ({ path }: typeof readFileSchema.infer) => {
-    console.log(`Reading file from ${path}`);
-    if (path.includes("...")) {
-      return JSON.stringify({ error_message: "Bad path given" });
-    }
-    try {
-      const content = await Bun.file(path).text();
-      return JSON.stringify({ file_content: content });
-    } catch (e) {
-      return JSON.stringify({
-        error_message: `Failed to read file: ${e instanceof Error ? e.message : e}`,
-      });
-    }
-  },
-};
 
 const tools: Tool[] = [get_location, get_weather, read_file];
 
@@ -80,26 +23,51 @@ function convertTools(tools: Tool[]): Anthropic.Messages.ToolUnion[] {
   return convertedTools;
 }
 
+const bashSession = new BashSession();
+
 async function executeToolUse(
   toolUse: Anthropic.Messages.ToolUseBlockParam,
 ): Promise<Anthropic.Messages.ToolResultBlockParam> {
-  const tool = tools.find((t) => t.name === toolUse.name);
-  if (!tool) {
-    return {
-      type: "tool_result",
-      tool_use_id: toolUse.id,
-      content: `Unknown tool name: ${toolUse.name}`,
-    };
+  let result: ToolResult;
+
+  console.log("Tool use", toolUse);
+
+  if (toolUse.name === "bash") {
+    const input = toolUse.input as BashToolInput;
+    try {
+      if (input.restart) {
+        bashSession.restart();
+        result = "Bash baseSession restarted.";
+      } else {
+        const { command, timeout } = toolUse.input as {
+          command: string;
+          timeout?: number;
+        };
+        result = await bashSession.run(command, timeout);
+      }
+    } catch (err) {
+      result = `Error: ${(err as Error).message}`;
+    }
+  } else {
+    const tool = tools.find((t) => t.name === toolUse.name);
+    if (!tool) {
+      return {
+        type: "tool_result",
+        tool_use_id: toolUse.id,
+        content: `Unknown tool name: ${toolUse.name}`,
+      };
+    }
+    result = await tool.jsFunction(toolUse.input);
   }
-  const content = await tool.jsFunction(toolUse.input);
+
   return {
     type: "tool_result",
     tool_use_id: toolUse.id,
-    content,
+    content: result,
   };
 }
 
-type AgenticRequest = {
+type AgentRequet = {
   messages: Anthropic.Messages.MessageParam[];
   tools: Anthropic.Messages.ToolUnion[];
   max_tokens: number;
@@ -107,7 +75,7 @@ type AgenticRequest = {
   model: string;
 };
 
-async function agenticRequest(request: AgenticRequest) {
+async function agentRequest(request: AgentRequet) {
   let turns = 0;
   const anthropic = new Anthropic();
   const messages: Anthropic.Messages.MessageParam[] = [...request.messages];
@@ -146,7 +114,11 @@ async function main() {
   const anthropicTools = convertTools(tools);
   let messages: Anthropic.Messages.MessageParam[] = [];
 
-  for await (const line of console) {
+  for (;;) {
+    const line = prompt("> ");
+    if (line === null) {
+      break;
+    }
     if (!line) {
       continue;
     }
@@ -156,7 +128,7 @@ async function main() {
       content: line,
     });
 
-    messages = await agenticRequest({
+    messages = await agentRequest({
       messages,
       tools: anthropicTools,
       max_tokens: 1000,

@@ -1,0 +1,14 @@
+{
+  "name": "fibonacci-calculator",
+  "version": "1.0.0",
+  "description": "A Fibonacci calculator built with Bun and TypeScript",
+  "main": "index.ts",
+  "scripts": {
+    "start": "bun index.ts",
+    "test": "bun test",
+    "build": "bun build ./cli.ts --compile --outfile fib"
+  },
+  "keywords": ["fibonacci", "typescript", "bun"],
+  "author": "",
+  "license": "MIT"
+}
