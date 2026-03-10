@@ -141,9 +141,15 @@ function createPrompt(history: string[]): {
     history,
   });
 
+  let closed = false;
+  rl.once("close", () => {
+    closed = true;
+  });
+
   return {
     ask: (prompt: string) =>
       new Promise<string | null>((resolve) => {
+        if (closed) return resolve(null);
         rl.once("close", () => resolve(null));
         rl.question(prompt, (answer) => {
           rl.removeAllListeners("close");
