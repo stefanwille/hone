@@ -6,7 +6,7 @@ import { loadHistory, saveHistory } from "./history";
 import { renderMarkdown, renderToolFrame } from "./render-markdown";
 import { TOOLS, type ToolResult } from "./tools";
 
-const MODEL = "claude-haiku-4-5";
+const MODEL = "claude-sonnet-4-6";
 
 const anthropic = new Anthropic();
 
@@ -42,7 +42,7 @@ async function executeToolUse(
 
   const resultStr =
     typeof result === "string" ? result : JSON.stringify(result, null, 2);
-  console.log(renderToolFrame(toolUse.name, toolUse.input, resultStr ?? ""));
+  console.log(renderToolFrame(toolUse.name, toolUse.input, resultStr));
 
   return {
     type: "tool_result",
@@ -86,11 +86,11 @@ async function agentRequest(line: string, session: AgentSession) {
   }
 }
 
-function createPrompt(history: string[]): {
-  ask: (prompt: string) => Promise<string | null>;
+function createPromptUser(history: string[]): {
+  promptUser: (prompt: string) => Promise<string | null>;
   getHistory: () => string[];
 } {
-  const rl = createInterface({
+  const readline = createInterface({
     input: process.stdin,
     output: process.stdout,
     terminal: true,
@@ -98,31 +98,35 @@ function createPrompt(history: string[]): {
   });
 
   let closed = false;
-  rl.once("close", () => {
+  readline.once("close", () => {
     closed = true;
   });
 
-  return {
-    ask: (prompt: string) =>
-      new Promise<string | null>((resolve) => {
-        if (closed) return resolve(null);
-        rl.once("close", () => resolve(null));
-        rl.question(prompt, (answer) => {
-          rl.removeAllListeners("close");
-          resolve(answer);
-        });
-      }),
-    getHistory: () => (rl as any).history as string[],
-  };
+  function promptUser(prompt: string) {
+    return new Promise<string | null>((resolve) => {
+      if (closed) return resolve(null);
+      readline.once("close", () => resolve(null));
+      readline.question(prompt, (answer) => {
+        readline.removeAllListeners("close");
+        resolve(answer);
+      });
+    });
+  }
+
+  function getHistory() {
+    return (readline as any).history as string[];
+  }
+
+  return { promptUser, getHistory };
 }
 
 async function main() {
   const history = await loadHistory();
   const session = await createAgentSession(MODEL);
-  const { ask, getHistory } = createPrompt(history);
+  const { promptUser, getHistory } = createPromptUser(history);
 
   for (;;) {
-    const line = await ask("> ");
+    const line = await promptUser("> ");
     if (line === null) {
       break;
     }
