@@ -9,13 +9,11 @@ export class BashSession {
   private outputBuffer = "";
   private readonly SENTINEL = `DONE_${crypto.randomUUID().replace(/-/g, "")}`;
 
-  constructor() {
-    this.process = spawn("bash", [], { env: process.env });
-    this.process.stdout.on("data", (d) => (this.outputBuffer += d.toString()));
-    this.process.stderr.on("data", (d) => (this.outputBuffer += d.toString()));
+  public constructor() {
+    this.process = this.createBashProcess();
   }
 
-  async run(command: string, timeoutMs = 120_000): Promise<string> {
+  public async run(command: string, timeoutMs = 120_000): Promise<string> {
     this.outputBuffer = "";
 
     // Write command + sentinel so we know when output is done
@@ -43,11 +41,18 @@ export class BashSession {
     });
   }
 
-  restart() {
+  public restart() {
+    this.process.stdout.removeAllListeners();
+    this.process.stderr.removeAllListeners();
     this.process.kill();
     this.outputBuffer = "";
-    this.process = spawn("bash", [], { env: process.env });
-    this.process.stdout.on("data", (d) => (this.outputBuffer += d.toString()));
-    this.process.stderr.on("data", (d) => (this.outputBuffer += d.toString()));
+    this.process = this.createBashProcess();
+  }
+
+  private createBashProcess() {
+    const bashProcess = spawn("bash", []);
+    bashProcess.stdout.on("data", (d) => (this.outputBuffer += d.toString()));
+    bashProcess.stderr.on("data", (d) => (this.outputBuffer += d.toString()));
+    return bashProcess;
   }
 }

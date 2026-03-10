@@ -60,3 +60,20 @@ export function createBash(bashSession: BashSession): Tool {
 export function createTools(bashSession: BashSession): Tool[] {
   return [get_location, get_weather, createBash(bashSession)];
 }
+
+export function convertTools(tools: Tool[]): Anthropic.Messages.ToolUnion[] {
+  return tools.map((tool) => {
+    if (tool.name === "bash") {
+      return {
+        type: "bash_20250124",
+        name: tool.name,
+      };
+    }
+    return {
+      name: tool.name,
+      description: tool.description,
+      input_schema: tool.inputSchema?.toJsonSchema() as any,
+      strict: true,
+    };
+  });
+}
