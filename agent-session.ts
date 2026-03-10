@@ -27,7 +27,7 @@ function convertTools(tools: Tool[]): Anthropic.Messages.ToolUnion[] {
     return {
       name: tool.name,
       description: tool.description,
-      input_schema: tool.inputSchema.toJsonSchema() as any,
+      input_schema: tool.inputSchema?.toJsonSchema() as any,
     };
   });
   return convertedTools;

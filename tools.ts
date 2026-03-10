@@ -8,7 +8,7 @@ export type ToolResult = ToolResultBlockParam["content"];
 export type Tool = {
   name: string;
   description: string;
-  inputSchema: type.Any;
+  inputSchema?: type.Any;
   run: (input: any) => Promise<ToolResult>;
   type?: Anthropic.Messages.ToolUnion["type"];
 };
@@ -47,7 +47,6 @@ export function createBash(bashSession: BashSession): Tool {
   return {
     name: "bash",
     description: "Run a command in the bash shell",
-    inputSchema: type({}),
     run: async (input: BashToolInput) => {
       if (input.restart) {
         bashSession.restart();
