@@ -9,7 +9,6 @@ export type Tool = {
   name: string;
   description: string;
   inputSchema?: type.Any;
-  type?: Anthropic.Messages.ToolUnion["type"];
   run: (input: any) => Promise<ToolResult>;
 };
 
@@ -43,7 +42,7 @@ const get_weather: Tool = {
   },
 };
 
-export function createBash(bashSession: BashSession): Tool {
+export function bash(bashSession: BashSession): Tool {
   return {
     name: "bash",
     description: "Run a command in the bash shell",
@@ -58,7 +57,7 @@ export function createBash(bashSession: BashSession): Tool {
 }
 
 export function createTools(bashSession: BashSession): Tool[] {
-  return [get_location, get_weather, createBash(bashSession)];
+  return [get_location, get_weather, bash(bashSession)];
 }
 
 export function convertTools(tools: Tool[]): Anthropic.Messages.ToolUnion[] {
