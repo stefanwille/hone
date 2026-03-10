@@ -51,10 +51,14 @@ async function loadHistory(): Promise<string[]> {
 }
 
 async function saveHistory(lines: string[]) {
-  await Bun.write(
-    HISTORY_FILE,
-    lines.slice(-MAX_HISTORY_LINES).join("\n") + "\n",
-  );
+  const recentLines = lines.slice(-MAX_HISTORY_LINES);
+  const existing = await Bun.file(HISTORY_FILE).exists()
+    ? (await Bun.file(HISTORY_FILE).text()).trim()
+    : "";
+  const updated = existing
+    ? existing + "\n" + recentLines.join("\n")
+    : recentLines.join("\n");
+  await Bun.write(HISTORY_FILE, updated + "\n");
 }
 
 const tools: Tool[] = [get_location, get_weather, read_file];
