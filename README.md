@@ -53,8 +53,8 @@ The agent follows a classic **agentic loop**:
 
 ```bash
 # Clone the repo
-git clone https://github.com/stefanwille/AI-coding-agent.git
-cd AI-coding-agent
+git clone https://github.com/stefanwille/ai-coding-agent.git
+cd ai-coding-agent
 
 # Install dependencies
 bun install
