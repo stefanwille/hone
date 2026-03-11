@@ -14,8 +14,13 @@ export function createReadlineSession(history: string[]): ReadlineSession {
   });
 
   async function promptUser(prompt: string): Promise<string | null> {
-    return await readline.question(prompt);
+    return new Promise((resolve) => {
+      readline.question(prompt).then(resolve);
+      // Handle CTRL-D (EOF)
+      readline.once("close", () => resolve(null));
+    });
   }
+
   function getHistory() {
     return (readline as any).history as string[];
   }
