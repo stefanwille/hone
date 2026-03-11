@@ -8,8 +8,6 @@ import { createReadlineSession } from "./agent/readline/readline";
 import { text } from "node:stream/consumers";
 
 async function repl() {
-  console.log("running REPL");
-
   const history = await loadReadlineHistory();
   const readlineSession = createReadlineSession(history);
   const agentSession = await createAgentSession();
@@ -31,8 +29,6 @@ async function repl() {
 }
 
 async function batchMode() {
-  console.log("running CLI");
-
   const input = await text(process.stdin);
   const agentSession = await createAgentSession();
   await agentRequest(input, agentSession);

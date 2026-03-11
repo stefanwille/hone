@@ -4,6 +4,7 @@
   "type": "module",
   "private": true,
   "scripts": {
+    "start": "bun run src/main.ts",
     "format": "oxfmt --write \"**/*.{ts,tsx,js,jsx}\"",
     "lint": "eslint \"**/*.{ts,tsx,js,jsx}\"",
     "test": "bun test",

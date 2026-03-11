@@ -15,7 +15,7 @@ echo "what is 1+2" | bun run src/main.ts
 ## Commands
 
 ```bash
-bun src/main.ts               # Run the interactive agent
+bun src/main.ts                # Run the interactive agent
 bun test                       # Run all tests
 bun test render-markdown       # Run tests matching a name
 bun run format                 # Format with oxfmt
