@@ -13,11 +13,14 @@ export function createReadlineSession(history: string[]): ReadlineSession {
     history,
   });
 
-  async function promptUser(prompt: string): Promise<string | null> {
+  function promptUser(prompt: string): Promise<string | null> {
     return new Promise((resolve) => {
-      readline.question(prompt).then(resolve);
-      // Handle CTRL-D (EOF)
-      readline.once("close", () => resolve(null));
+      const onClose = () => resolve(null);
+      readline.once("close", onClose);
+      readline.question(prompt).then((answer) => {
+        readline.removeListener("close", onClose);
+        resolve(answer);
+      });
     });
   }
 

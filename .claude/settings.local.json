@@ -3,7 +3,8 @@
     "allow": [
       "Bash(grep -E \"\\\\.\\(ts|tsx|js|json|html|md\\)$\")",
       "Bash(bun test:*)",
-      "Bash(git -C /Users/stefanwille/Projects/AI/agentic-loop log --oneline -10)"
+      "Bash(git -C /Users/stefanwille/Projects/AI/agentic-loop log --oneline -10)",
+      "Bash(bun run:*)"
     ]
   }
 }
