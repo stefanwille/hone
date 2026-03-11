@@ -1,3 +1,4 @@
+import { readdir, stat } from "node:fs/promises";
 import { type } from "arktype";
 import type { ExtendedAnthropicTool } from "../tool";
 
@@ -17,7 +18,34 @@ const ViewInputSchema = type({
 
 const TextEditorInputSchema = ViewInputSchema;
 
-async function view(input: typeof ViewInputSchema.infer) {
+async function isDirectory(path: string): Promise<boolean> {
+  try {
+    const stats = await stat(path);
+    return stats.isDirectory();
+  } catch {
+    return false; // path doesn't exist
+  }
+}
+
+async function view(input: typeof ViewInputSchema.infer): Promise<string> {
+  if (await isDirectory(input.path)) {
+    if (input.view_range) {
+      return "Error: text editor view command on a directory does not support view_range";
+    }
+    const entries = await readdir(input.path);
+    let content = entries.join("\n");
+    if (input.max_characters) {
+      content = content.slice(0, input.max_characters);
+    }
+    return content;
+  }
+
+  const file = Bun.file(input.path);
+  if (!(await file.exists())) {
+    return `File ${input.path} does not exist`;
+  }
+
+  // It is a file
   let content = await Bun.file(input.path).text();
   if (input.view_range) {
     const lines = content.split("\n");
