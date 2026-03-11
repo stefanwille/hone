@@ -28,7 +28,9 @@ async function executeToolUse(
 
   const resultStr =
     typeof result === "string" ? result : JSON.stringify(result, null, 2);
-  console.log(renderToolFrame(toolUse.name, toolUse.input, resultStr));
+  console.log(
+    renderToolFrame(`Tool: ${toolUse.name}`, toolUse.input, resultStr),
+  );
 
   return {
     type: "tool_result",
