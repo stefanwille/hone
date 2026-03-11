@@ -1,4 +1,4 @@
-import { createInterface } from "node:readline";
+import { createInterface } from "node:readline/promises";
 
 export type ReadlineSession = {
   promptUser: (prompt: string) => Promise<string | null>;
@@ -13,20 +13,34 @@ export function createReadlineSession(history: string[]): ReadlineSession {
     history,
   });
 
-  let closed = false;
-  readline.once("close", () => {
-    closed = true;
+  // Lines are buffered eagerly as they arrive; null signals EOF.
+  const bufferedLines: Array<string | null> = [];
+  let pendingResolve: ((line: string | null) => void) | null = null;
+
+  readline.on("line", (line) => {
+    if (pendingResolve) {
+      pendingResolve(line);
+      pendingResolve = null;
+    } else {
+      bufferedLines.push(line);
+    }
   });
 
-  function promptUser(prompt: string) {
-    return new Promise<string | null>((resolve) => {
-      if (closed) return resolve(null);
-      const onClose = () => resolve(null);
-      readline.once("close", onClose);
-      readline.question(prompt, (answer) => {
-        readline.removeListener("close", onClose);
-        resolve(answer);
-      });
+  readline.once("close", () => {
+    if (pendingResolve) {
+      pendingResolve(null);
+      pendingResolve = null;
+    } else {
+      bufferedLines.push(null);
+    }
+  });
+
+  function promptUser(prompt: string): Promise<string | null> {
+    if (bufferedLines.length > 0) {
+      return Promise.resolve(bufferedLines.shift()!);
+    }
+    return new Promise((resolve) => {
+      pendingResolve = resolve;
     });
   }
 
