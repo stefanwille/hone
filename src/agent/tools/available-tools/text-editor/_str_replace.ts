@@ -28,5 +28,5 @@ export async function strReplace(input: StrReplaceInput): Promise<string> {
 
   const newContent = content.replace(input.old_str, input.new_str);
   await Bun.write(input.path, newContent);
-  return "Successfully replaced text at exactly one location.";
+  return "Success";
 }

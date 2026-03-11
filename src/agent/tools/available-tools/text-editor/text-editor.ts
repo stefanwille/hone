@@ -18,7 +18,7 @@ export const textEditor: ExtendedAnthropicTool = {
         input,
         parsedInput.summary,
       );
-      return `Invalid input: ${parsedInput.summary}`;
+      return `Error: Invalid input: ${parsedInput.summary}`;
     }
     switch (parsedInput.command) {
       case "view":

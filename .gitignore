@@ -38,4 +38,7 @@ fibonacci-app/fib
 
 # Bun build cache files
 *.bun-build
+
 history.txt
+
+scratchpad.txt
