@@ -1,0 +1,6 @@
+{
+  "setup-worktree": [
+    "bun install",
+    "cp /Users/stefanwille/Projects/AI/coding-agent/.env.local ."
+  ]
+}
