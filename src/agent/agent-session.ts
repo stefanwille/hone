@@ -1,7 +1,7 @@
 import Anthropic from "@anthropic-ai/sdk";
-import { BashSession } from "./bash-session";
+import { BashSession } from "./tools/bash-session";
 import { loadSystemPrompt } from "./system-prompt";
-import { convertTools, createTools, type Tool } from "./tools";
+import { convertTools, createTools, type Tool } from "./tools/tools";
 
 export type AgentSession = {
   anthropicAPI: Anthropic;

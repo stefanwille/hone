@@ -1,7 +1,10 @@
-import { createAgentSession } from "./agent-session";
-import { agentRequest } from "./agent-request";
-import { loadReadlineHistory, saveReadlineHistory } from "./readline-history";
-import { createReadlineSession } from "./readline";
+import { createAgentSession } from "./agent/agent-session";
+import { agentRequest } from "./agent/agent-request";
+import {
+  loadReadlineHistory,
+  saveReadlineHistory,
+} from "./readline/readline-history";
+import { createReadlineSession } from "./readline/readline";
 
 async function main() {
   const history = await loadReadlineHistory();

@@ -1,7 +1,10 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { type AgentSession } from "./agent-session";
-import { renderMarkdown, renderToolFrame } from "./render-markdown";
-import { type ToolResult } from "./tools";
+import {
+  renderMarkdown,
+  renderToolFrame,
+} from "../markdown-renderer/render-markdown";
+import { type ToolResult } from "./tools/tools";
 
 async function executeToolUse(
   toolUse: Anthropic.Messages.ToolUseBlockParam,
