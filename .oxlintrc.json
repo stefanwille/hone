@@ -1,16 +1,24 @@
 {
   "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": ["typescript", "oxc", "unicorn", "import"],
+  "plugins": [
+    "typescript",
+    "oxc",
+    "unicorn",
+    "import"
+  ],
   "categories": {
     "correctness": "error",
     "suspicious": "warn"
   },
   "rules": {
-    "no-unused-vars": "warn",
+    "no-unused-vars": "error",
     "no-console": "off",
     "no-control-regex": "off",
     "typescript/no-explicit-any": "warn",
     "import/no-named-as-default-member": "off"
   },
-  "ignorePatterns": ["node_modules", "dist"]
+  "ignorePatterns": [
+    "node_modules",
+    "dist"
+  ]
 }

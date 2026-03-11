@@ -1,29 +1,31 @@
-import type Anthropic from "@anthropic-ai/sdk";
-import type { BashSession } from "./available-tools/bash-session";
 import { bash } from "./available-tools/bash";
+import type { BashSession } from "./available-tools/bash-session";
 import { get_location } from "./available-tools/get-location";
 import { get_weather } from "./available-tools/get-weather";
-import type { Tool } from "./tool";
+import { textEditor } from "./available-tools/text-editor";
+import { isAIAgentTool, type AnthropicTool, type Tool } from "./tool";
 
 export function createTools(bashSession: BashSession): Tool[] {
-  return [get_location, get_weather, bash(bashSession)];
+  return [get_location, get_weather, bash(bashSession), textEditor];
 }
 
-export function convertTools(tools: Tool[]): Anthropic.Messages.ToolUnion[] {
+export function convertTools(tools: Tool[]): AnthropicTool[] {
   return tools.map((tool) => {
-    if (tool.name === "bash") {
-      return {
-        type: "bash_20250124",
-        name: tool.name,
-      };
-    }
-    const inputSchema = tool.inputSchema?.toJsonSchema();
-    return {
-      name: tool.name,
-      description: tool.description,
+    if (isAIAgentTool(tool)) {
       // oxlint-disable-next-line typescript-eslint/no-explicit-any
-      input_schema: inputSchema as any,
-      strict: true,
-    };
+      const inputSchema = tool.inputSchema?.toJsonSchema() as any;
+      return {
+        name: tool.name,
+        description: tool.description,
+        input_schema: inputSchema,
+        strict: true,
+      };
+    } else {
+      // Extended Anthropic tool
+      const anthropicTool: AnthropicTool = { ...tool };
+      // @ts-expect-error - run is not part of the AnthropicTool type
+      delete anthropicTool.run;
+      return anthropicTool;
+    }
   });
 }

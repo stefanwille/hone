@@ -1,5 +1,5 @@
 import { type } from "arktype";
-import type { Tool } from "../tool";
+import type { AIAgentTool } from "../tool";
 
 const getWeatherSchema = type({
   "+": "reject",
@@ -82,7 +82,8 @@ async function fetchWeather(location: string): Promise<string> {
   );
 }
 
-export const get_weather: Tool = {
+export const get_weather: AIAgentTool = {
+  type: "local_tool",
   name: "get_weather",
   description: "Get the current weather in a given location",
   inputSchema: getWeatherSchema,

@@ -21,6 +21,7 @@ bun test render-markdown       # Run tests matching a name
 bun run format                 # Format with oxfmt
 bun run lint                   # Lint with oxlint
 bun run typecheck              # Type-check without emitting
+bun run verify                 # Lint + typecheck + test
 ```
 
 ## Validation Commands

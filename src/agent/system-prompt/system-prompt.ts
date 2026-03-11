@@ -1,6 +1,10 @@
 export async function loadSystemPrompt(): Promise<string> {
   const prompts: string[] = [];
 
+  prompts.push(
+    await Bun.file(new URL("SYSTEM_PROMPT.md", import.meta.url)).text(),
+  );
+
   // Load ~/.claude/CLAUDE.md
   try {
     const homeDir = Bun.env.HOME || Bun.env.USERPROFILE;

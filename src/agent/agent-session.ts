@@ -1,6 +1,6 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { BashSession } from "./tools/available-tools/bash-session";
-import { loadSystemPrompt } from "./system-prompt";
+import { loadSystemPrompt } from "./system-prompt/system-prompt";
 import { convertTools, createTools } from "./tools/tool-list";
 import type { Tool } from "./tools/tool";
 
