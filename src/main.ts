@@ -15,32 +15,36 @@ async function repl() {
   const agentSession = await createAgentSession();
 
   for (;;) {
-    const line = await readlineSession.promptUser("> ");
-    if (line === null || line === "exit" || line === "quit") {
+    let input = await readlineSession.promptUser("> ");
+    if (input === null) {
       break;
     }
-    if (!line) continue;
+    input = input.trim();
+    if (input === "exit" || input === "quit") {
+      break;
+    }
+    if (!input) continue;
     await saveReadlineHistory(readlineSession.getHistory());
-    await agentRequest(line, agentSession);
+    await agentRequest(input, agentSession);
   }
+  process.exit(0);
 }
 
-async function executeStdin() {
+async function batchMode() {
   console.log("running CLI");
 
   const input = await text(process.stdin);
   const agentSession = await createAgentSession();
   await agentRequest(input, agentSession);
+  process.exit(0);
 }
 
 async function main() {
   if (process.stdin.isTTY) {
     await repl();
   } else {
-    await executeStdin();
+    await batchMode();
   }
-
-  process.exit(0);
 }
 
 main().catch(console.error);
