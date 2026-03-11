@@ -5,8 +5,6 @@ export class BashSession {
   private outputBuffer = "";
   private readonly SENTINEL = `DONE_${crypto.randomUUID().replace(/-/g, "")}`;
 
-  public constructor() {}
-
   public async run(command: string, timeoutMs = 120_000): Promise<string> {
     this.outputBuffer = "";
 

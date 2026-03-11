@@ -179,7 +179,7 @@ export function renderMarkdown(markdown: string): string {
 
   for (const line of lines) {
     // Table accumulation
-    if (!inCodeBlock && /^\|/.test(line.trim())) {
+    if (!inCodeBlock && line.trim().startsWith("|")) {
       tableBuffer.push(line);
       continue;
     }

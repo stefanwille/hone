@@ -19,7 +19,7 @@ bun start                      # Run the agent
 bun test                       # Run all tests
 bun test render-markdown       # Run tests matching a name
 bun run format                 # Format with oxfmt
-bun run lint                   # Lint with eslint
+bun run lint                   # Lint with oxlint
 bun run typecheck              # Type-check without emitting
 ```
 
