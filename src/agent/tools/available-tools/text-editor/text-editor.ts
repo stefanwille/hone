@@ -19,6 +19,17 @@ export const textEditor: ExtendedAnthropicTool = {
   type: "text_editor_20250728",
   name: "str_replace_based_edit_tool",
   run: async (input: unknown) => {
+    const commandName =
+      typeof input === "object" && input !== null && "command" in input
+        ? input.command
+        : null;
+    if (typeof commandName !== "string") {
+      return `Error: Invalid command`;
+    }
+    const command = CommandMapping[commandName];
+    if (!command) {
+      return `Unknown command ${commandName}`;
+    }
     const parsedInput = TextEditorInputSchema(input);
     if (parsedInput instanceof type.errors) {
       console.error(
@@ -27,10 +38,6 @@ export const textEditor: ExtendedAnthropicTool = {
         parsedInput.summary,
       );
       return `Error: Invalid input: ${parsedInput.summary}`;
-    }
-    const command = CommandMapping[parsedInput.command];
-    if (!command) {
-      return `Unknown command ${parsedInput.command}`;
     }
     return await command(parsedInput);
   },

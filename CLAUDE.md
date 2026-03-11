@@ -60,3 +60,7 @@ Run these commands to verify the project is in clean state.
 - **No build step**: Bun runs .ts directly.
 - **Env**: Bun auto-loads `.env.local` (contains `ANTHROPIC_API_KEY`).
 - **Default model**: `claude-sonnet-4-6` (set in agent-session.ts).
+
+## Tests
+
+Order test scenarios such that the happy paths are in the beginning.
