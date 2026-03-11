@@ -6,6 +6,12 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 An interactive AI agent built on the Anthropic Claude API with Bun/TypeScript. The agent runs a REPL loop: user input → Claude API → tool execution → render response → repeat.
 
+It can also execute a request piped into the CLI:
+
+```
+echo "what is 1+2" | bun run src/main.ts
+```
+
 ## Commands
 
 ```bash
