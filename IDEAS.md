@@ -1,4 +1,3 @@
-- text editor tool
 - guardrails - bash
 - evaluations - against live API - which tool?
 - progress indicator - activity-gerunds.txt
