@@ -40,7 +40,7 @@ Run these commands to verify the project is in clean state.
 
 `src/agent/agent-session.ts` — `AgentSession` type holds all session state: Anthropic client, message history, tools, model config, token counter. `createAgentSession()` wires everything together.
 
-`src/agent/agentic-loop.ts` — `agentRequest()` sends messages to Claude, processes tool calls in a loop (max turns configurable, default 20). Tool calls within a turn run sequentially. Handles all stop reasons. Ensures messages alternate user/assistant for API compliance.
+`src/agent/agent-request.ts` — `agentRequest()` sends messages to Claude, processes tool calls in a loop (max turns configurable, default 20). Tool calls within a turn run sequentially. Handles all stop reasons. Ensures messages alternate user/assistant for API compliance.
 
 `src/agent/tools/tool.ts` — Two tool types: `AIAgentTool` (custom tools with arktype input schemas) and `ExtendedAnthropicTool` (Anthropic-native tools like bash). Both expose a `run` function.
 
