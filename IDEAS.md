@@ -4,3 +4,6 @@
 - progress indicator - activity-gerunds.txt
 - prompt caching
 - plan mode
+- /clear
+- /init
+- Task tool
