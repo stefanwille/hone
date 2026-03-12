@@ -2,7 +2,7 @@ import { type } from "arktype";
 import type { AIAgentTool } from "../tool";
 import type { Mode } from "../../agent-session";
 
-const exitPlanModeSchema = type({});
+const exitPlanModeSchema = type({ "+": "reject" });
 
 export function exitPlanMode(setMode: (mode: Mode) => void): AIAgentTool {
   return {
