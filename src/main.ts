@@ -11,6 +11,7 @@ async function repl() {
   const history = await loadReadlineHistory();
   const readlineSession = createReadlineSession(history);
   const agentSession = await createAgentSession();
+  console.log("/help for available commands.\n");
 
   for (;;) {
     const prompt = agentSession.mode === "plan" ? "plan> " : "> ";
@@ -23,6 +24,14 @@ async function repl() {
       break;
     }
     if (!input) continue;
+    if (input === "/help") {
+      console.log("Available commands:");
+      console.log(
+        "/plan - Plan mode. Agent will only read and plan, not edit.",
+      );
+      console.log("/agent - Agent mode. Agent can read, write, and execute.");
+      continue;
+    }
     if (input === "/plan") {
       agentSession.mode = "plan";
       console.log("Plan mode. Agent will only read and plan, not edit.");
