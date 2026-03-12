@@ -1,17 +1,17 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { BashSession } from "./tools/available-tools/bash/bash-session";
-import { loadSystemPrompt } from "./system-prompt/system-prompt";
 import { convertTools, createTools } from "./tools/tool-list";
 import type { Tool } from "./tools/tool";
 
 /**
  * Agent session models the session the user has with the agent.
  */
+export type Mode = "agent" | "plan";
+
 export type AgentSession = {
   anthropicAPI: Anthropic;
   messages: Anthropic.Messages.MessageParam[];
-  // System prompt
-  system?: string;
+  mode: Mode;
   tools: Tool[];
   anthropicTools: Anthropic.Messages.ToolUnion[];
   model: string;
@@ -44,11 +44,10 @@ export async function createAgentSession(options?: {
   const anthropicAPI = new Anthropic();
   const tools = createTools(new BashSession());
   const anthropicTools = convertTools(tools);
-  const system = await loadSystemPrompt();
   const session: AgentSession = {
     anthropicAPI,
     messages: [],
-    system,
+    mode: "agent",
     tools,
     anthropicTools,
     maxTokens,

@@ -13,7 +13,8 @@ async function repl() {
   const agentSession = await createAgentSession();
 
   for (;;) {
-    let input = await readlineSession.promptUser("> ");
+    const prompt = agentSession.mode === "plan" ? "plan> " : "> ";
+    let input = await readlineSession.promptUser(prompt);
     if (input === null) {
       break;
     }
@@ -22,6 +23,16 @@ async function repl() {
       break;
     }
     if (!input) continue;
+    if (input === "/plan") {
+      agentSession.mode = "plan";
+      console.log("Plan mode. Agent will only read and plan, not edit.");
+      continue;
+    }
+    if (input === "/agent") {
+      agentSession.mode = "agent";
+      console.log("Agent mode. Agent can read, write, and execute.");
+      continue;
+    }
     await saveReadlineHistory(readlineSession.getHistory());
     await agentRequest(input, agentSession);
   }

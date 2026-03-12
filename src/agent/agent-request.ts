@@ -4,7 +4,12 @@ import {
   renderMarkdown,
   renderToolFrame,
 } from "./markdown-renderer/render-markdown";
+import { loadSystemPrompt } from "./system-prompt/system-prompt";
 import { type ToolResult } from "./tools/tool";
+
+const PLAN_MODE_ADDENDUM = await Bun.file(
+  new URL("system-prompt/PLAN_MODE_ADDENDUM.md", import.meta.url),
+).text();
 
 async function executeToolUse(
   toolUse: Anthropic.Messages.ToolUseBlockParam,
@@ -47,14 +52,20 @@ export async function agentRequest(input: string, session: AgentSession) {
       content: input,
     });
 
+    const baseSystem = await loadSystemPrompt();
     let turns;
     for (turns = 0; turns < session.maxTurns; turns++) {
       let response: Anthropic.Messages.Message;
+      const system =
+        session.mode === "plan"
+          ? baseSystem + "\n\n" + PLAN_MODE_ADDENDUM
+          : baseSystem;
+
       try {
         response = await session.anthropicAPI.messages.create({
           model: session.model,
           max_tokens: session.maxTokens,
-          system: session.system || undefined,
+          system,
           tools: session.anthropicTools,
           messages: session.messages,
         });
