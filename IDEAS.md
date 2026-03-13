@@ -1,5 +1,8 @@
-- evaluations
+- Use evaluations to allow AI to verify its work
+- Self improvement loop: Let the coding agent improve itself by running a ralph loop
+- Ralph loop builtin
 - guardrails - bash
+- Execute in docker
 - progress indicator - activity-gerunds.txt
 - prompt caching
 - /clear
