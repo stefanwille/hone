@@ -1,36 +1,36 @@
 import {
   SandboxManager,
+  SandboxRuntimeConfigSchema,
   type SandboxRuntimeConfig,
 } from "@anthropic-ai/sandbox-runtime";
 import { spawn } from "child_process";
 
-export async function main() {
+export type SandboxedMain = () => Promise<void>;
+
+export async function runInSandbox(main: SandboxedMain) {
   if (Bun.env.SRT_SANDBOXED) {
-    await childMain();
+    // Child: Run the actual agent
+    await main();
   } else {
-    await parentMain();
+    // Parent
+    await relaunchProgramInSandbox();
   }
 }
 
-async function childMain() {
-  // Run the actual agent
-  // await runAgent();
-  console.log("Child: running agent", Bun.argv.join(" "));
-}
-
-async function parentMain() {
+async function relaunchProgramInSandbox() {
   // Parent: re-launch ourselves inside the sandbox
 
-  const POLICY_FILE = new URL("sandbox-settings.json", import.meta.url);
-  console.log("Loading sandbox policy from", POLICY_FILE.toString());
-  const SANDBOX_POLICY: SandboxRuntimeConfig =
-    await Bun.file(POLICY_FILE).json();
-
-  await SandboxManager.initialize(SANDBOX_POLICY);
+  const config = await loadSandboxRuntimeConfig();
+  await SandboxManager.initialize(config);
   const cmd = await SandboxManager.wrapWithSandbox(
     `SRT_SANDBOXED=1 ${process.execPath} ${process.argv.slice(1).join(" ")}`,
   );
   spawn(cmd, { shell: true, stdio: "inherit" });
 }
 
-main().catch(console.error);
+async function loadSandboxRuntimeConfig(): Promise<SandboxRuntimeConfig> {
+  const POLICY_FILE = new URL("sandbox-settings.json", import.meta.url);
+  console.log("Loading sandbox policy from", POLICY_FILE.toString());
+  const SANDBOX_POLICY = await Bun.file(POLICY_FILE).json();
+  return SandboxRuntimeConfigSchema.parse(SANDBOX_POLICY);
+}

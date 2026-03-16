@@ -6,6 +6,7 @@ import {
 } from "./agent/readline/readline-history";
 import { createReadlineSession } from "./agent/readline/readline";
 import { text } from "node:stream/consumers";
+import { runInSandbox } from "./agent/sandbox/runProgramInSandbox";
 
 async function repl() {
   const history = await loadReadlineHistory();
@@ -56,12 +57,16 @@ async function batchMode() {
   process.exit(0);
 }
 
-async function main() {
+async function agentMain() {
   if (process.stdin.isTTY) {
     await repl();
   } else {
     await batchMode();
   }
+}
+
+async function main() {
+  await runInSandbox(agentMain);
 }
 
 main().catch(console.error);

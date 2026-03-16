@@ -1,4 +1,5 @@
 {
+  "allowPty": true,
   "filesystem": {
     "denyRead": [
       "~/.ssh",
