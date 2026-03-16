@@ -1,4 +1,5 @@
 - Use evaluations to allow AI to verify its work
+- Protect against prompt injection
 - Self improvement loop: Let the coding agent improve itself by running a ralph loop
 - Ralph loop builtin
 - guardrails - bash
