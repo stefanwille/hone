@@ -8,6 +8,7 @@
 - streaming
 - Self improvement loop: Let the coding agent improve itself by running a ralph loop
 - guardrails - bash
+- Context window decisions - means managing what's in your messages array as the conversation grows. The problem: every API call sends the entire conversation history. With an agentic coding tool, this blows up fast because tool results (file contents, bash output) are often huge.
 - Execute text editor in docker
 - Ralph loop builtin
 - progress indicator - activity-gerunds.txt - Terminal spinner — Animate chars (⠋⠙⠹⠸⠼⠴⠦⠧⠇⠏) on a setInterval, clear on response. ~15 lines of code, no deps. Write to stderr with \r so it overwrites itself.
