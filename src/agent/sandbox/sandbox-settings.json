@@ -1,0 +1,20 @@
+{
+  "filesystem": {
+    "denyRead": [
+      "~/.ssh",
+      "~/.aws"
+    ],
+    "allowWrite": [
+      ".",
+      "/tmp"
+    ],
+    "denyWrite": []
+  },
+  "network": {
+    "allowedDomains": [
+      "api.anthropic.com",
+      "www.google.com"
+    ],
+    "deniedDomains": []
+  }
+}

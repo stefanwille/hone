@@ -23,6 +23,7 @@
     "typescript": "^5"
   },
   "dependencies": {
+    "@anthropic-ai/sandbox-runtime": "^0.0.42",
     "@anthropic-ai/sdk": "^0.78.0",
     "arktype": "^2.2.0"
   }
