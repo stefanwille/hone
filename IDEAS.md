@@ -1,9 +1,9 @@
 - Use evaluations to allow AI to verify its work
 - Protect against prompt injection
 - Self improvement loop: Let the coding agent improve itself by running a ralph loop
-- Ralph loop builtin
 - guardrails - bash
 - Execute in docker
+- Ralph loop builtin
 - progress indicator - activity-gerunds.txt - Terminal spinner — Animate chars (⠋⠙⠹⠸⠼⠴⠦⠧⠇⠏) on a setInterval, clear on response. ~15 lines of code, no deps. Write to stderr with \r so it overwrites itself.
 - prompt caching
 - /clear
@@ -35,3 +35,5 @@ Review Feedback:
   - renderToolFrame width is fixed at 50 (render-markdown.ts:129) — input/result lines overflow the box visually.
   - Empty catch {} blocks (system-prompt.ts:17,25) — silently swallowing file-read errors. At minimum log a debug message.
   - prettier in devDependencies (package.json:21) — unused since formatting uses oxfmt.
+
+- Hello
