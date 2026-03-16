@@ -41,4 +41,3 @@ Review Feedback:
   - No view_range bounds checking (\_view.ts:51-54) — negative or out-of-range values are silently handled by Array.slice but could return unexpected results.
   - renderToolFrame width is fixed at 50 (render-markdown.ts:129) — input/result lines overflow the box visually.
   - Empty catch {} blocks (system-prompt.ts:17,25) — silently swallowing file-read errors. At minimum log a debug message.
-  - prettier in devDependencies (package.json:21) — unused since formatting uses oxfmt.
