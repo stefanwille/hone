@@ -1,21 +1,12 @@
 {
   "allowPty": true,
   "filesystem": {
-    "denyRead": [
-      "~/.ssh",
-      "~/.aws"
-    ],
-    "allowWrite": [
-      ".",
-      "/tmp"
-    ],
+    "denyRead": ["~/.ssh", "~/.aws"],
+    "allowWrite": [".", "/tmp"],
     "denyWrite": []
   },
   "network": {
-    "allowedDomains": [
-      "api.anthropic.com",
-      "www.google.com"
-    ],
+    "allowedDomains": ["api.anthropic.com", "www.stefanwille.com"],
     "deniedDomains": []
   }
 }

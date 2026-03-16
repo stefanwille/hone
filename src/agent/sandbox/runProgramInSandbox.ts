@@ -5,12 +5,12 @@ import {
 } from "@anthropic-ai/sandbox-runtime";
 import { spawn } from "child_process";
 
-export type SandboxedMain = () => Promise<void>;
+export type Program = () => Promise<void>;
 
-export async function runInSandbox(main: SandboxedMain) {
+export async function runInSandbox(program: Program) {
   if (Bun.env.SRT_SANDBOXED) {
     // Child: Run the actual agent
-    await main();
+    await program();
   } else {
     // Parent
     await relaunchProgramInSandbox();

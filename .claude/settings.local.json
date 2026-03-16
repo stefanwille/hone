@@ -7,5 +7,9 @@
       "Bash(bun run:*)"
     ]
   },
-  "enabledPlugins": {}
+  "enabledPlugins": {},
+  "sandbox": {
+    "enabled": true,
+    "autoAllowBashIfSandboxed": true
+  }
 }

@@ -8,7 +8,7 @@ import { createReadlineSession } from "./agent/readline/readline";
 import { text } from "node:stream/consumers";
 import { runInSandbox } from "./agent/sandbox/runProgramInSandbox";
 
-async function repl() {
+async function repl(): Promise<voi {
   const history = await loadReadlineHistory();
   const readlineSession = createReadlineSession(history);
   const agentSession = await createAgentSession();
@@ -57,7 +57,7 @@ async function batchMode() {
   process.exit(0);
 }
 
-async function agentMain() {
+async function program() {
   if (process.stdin.isTTY) {
     await repl();
   } else {
@@ -66,7 +66,7 @@ async function agentMain() {
 }
 
 async function main() {
-  await runInSandbox(agentMain);
+  await runInSandbox(program);
 }
 
 main().catch(console.error);
