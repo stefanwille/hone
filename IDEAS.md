@@ -1,10 +1,11 @@
-- Execute bash in docker
+- Execute bash in sandbox
   - Only certain tools run in sandbox
   - https://github.com/anthropic-experimental/sandbox-runtime
 - Use evaluations to allow AI to verify its work
   - srt plus temp directories
   - evalite to get started
 - Protect against prompt injection
+- streaming
 - Self improvement loop: Let the coding agent improve itself by running a ralph loop
 - guardrails - bash
 - Execute text editor in docker
