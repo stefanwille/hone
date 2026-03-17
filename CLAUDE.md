@@ -23,3 +23,4 @@ Run these in order to verify clean state:
 ## Conventions
 
 - Order test scenarios with happy paths first.
+- Prefer named functions over consts-with-arrow-function.
