@@ -35,3 +35,5 @@ You have access to these tools:
 ## Sandboxing
 
 - You are running in a SRT sandbox, which prevents access to certain directories and network domains.
+  - OS message for a blocked directory: "Operation not permitted"
+  - OS message for a blocked network domain: "Connection blocked by network allowlist"
