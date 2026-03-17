@@ -22,7 +22,9 @@ I want to add evaluations. The motivation is to steer development based on data.
 - Run evals against real Claude API
 - Model configurable per eval
 - Scoring based on work directory and agentSession
-- Eval setup: Run eval program using runInSandbox, create temp dir, copy files, run agentRequest, score the result
+- beforeAll: Run eval program using runInSandbox, create a temp dir for the run.
+- beforeEach: create dir for the scenario, copy files, run agentRequest, score the result.
+- afterAll: Print temp dir to the console, for inspection
 
 ## Scenarios to get started with
 
