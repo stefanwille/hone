@@ -12,7 +12,7 @@
     "test:watch": "bun test --watch",
     "typecheck": "tsc --noEmit",
     "verify": "bun format && bun lint && bun typecheck && bun test",
-    "eval:watch": "evalite watch"
+    "eval:watch": "srt -s src/evaluations/evalite-sandbox-settings.json evalite watch"
   },
   "devDependencies": {
     "@types/bun": "latest",

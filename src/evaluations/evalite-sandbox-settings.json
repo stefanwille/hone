@@ -1,0 +1,28 @@
+{
+  "allowPty": true,
+  "filesystem": {
+    "denyRead": [
+      "~/.ssh",
+      "~/.aws",
+      "~/.gnupg",
+      "~/.config/gh",
+      "~/.netrc",
+      "~/.npmrc",
+      "~/.docker",
+      "~/.kube"
+    ],
+    "allowWrite": [
+      ".",
+      "/tmp"
+    ],
+    "denyWrite": []
+  },
+  "network": {
+    "allowLocalBinding": true,
+    "allowedDomains": [
+      "api.anthropic.com",
+      "www.stefanwille.com"
+    ],
+    "deniedDomains": []
+  }
+}
