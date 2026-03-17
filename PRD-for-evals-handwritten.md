@@ -5,7 +5,19 @@ I want to add evaluations. The motivation is to steer development based on data.
 ## Evaluations Framework
 
 - At the start, find all files in a given directory whose filenames end with .eval.ts. Run these dynamically as evals.
-- Track the costs, for agent and for the LLM judge. Show them in the summary.
+
+- Eval interface:
+
+  describe("Basic arithmetic", () => {
+  task("1+1", input: ..., task: (input) => {
+  ...
+  }, scorer: ..., options: {model: 'haiku', })
+  } )
+
+- Scorer interface:
+
+<TInput, TOutput, TExpected = TOutput>(props: {input: TInput, output: TOutput, expect: TExpexted}) : number | {score: number, metadata?: Record<string, unknown>}
+
 - At the end, show a summary:
   - scenarios and their scores and cost
   - Total score and total cost
@@ -16,6 +28,11 @@ I want to add evaluations. The motivation is to steer development based on data.
   - LLM as a judge
 - beforeEach and afterEach
 - beforeAll - required for runInSandbox
+- Track the costs, for agent and for the LLM judge. Show them in the summary.
+- Display metadata along the result.
+- Summary example:
+  Basic Arithmetic > 1 + 1: 100% in 7.2s - { tokens: 534, cost: "$1.24"}
+  Total: 73% in 1min 27s - { cost: "$4" }
 
 ## Framework specific to the Agent Coder
 
@@ -25,6 +42,8 @@ I want to add evaluations. The motivation is to steer development based on data.
 - beforeAll: Run eval program using runInSandbox, create a temp dir for the run.
 - beforeEach: create dir for the scenario, copy files, run agentRequest, score the result.
 - afterAll: Print temp dir to the console, for inspection
+- tokens can be returned in the scorer metadata
+- Tool calls can be returned in the scorer metadata
 
 ## Scenarios to get started with
 
