@@ -1,5 +1,4 @@
 - Execute bash in sandbox
-  - Only certain tools run in sandbox
   - https://github.com/anthropic-experimental/sandbox-runtime
 - Use evaluations to allow AI to verify its work
   - srt plus temp directories
