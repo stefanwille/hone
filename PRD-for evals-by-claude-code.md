@@ -41,10 +41,25 @@ A custom sandbox policy for evals may be needed — the eval sandbox config shou
 
 ## Package setup
 
-- Install: `bun add -d evalite`
+- Install: `bun add -d evalite autoevals`
 - Eval files: `src/evals/*.eval.ts`
-- Script: `"eval": "srt bunx evalite"` in package.json
+- Scripts in package.json:
+  - `"eval": "srt bunx evalite"` — one-shot run
+  - `"eval:watch": "srt bunx evalite watch"` — watch mode with UI
+- Config: `evalite.config.ts` at project root (see below)
 - Evalite UI: `localhost:3006` (auto-served by evalite)
+
+### `evalite.config.ts`
+
+```ts
+import { defineConfig } from "evalite/config";
+
+export default defineConfig({
+  testTimeout: 120_000, // agent calls may be slow
+  maxConcurrency: 1, // sequential to avoid rate limits initially
+  server: { port: 3006 },
+});
+```
 
 ## MVP Scenarios (4)
 
@@ -125,12 +140,14 @@ export async function createEvalDir(
   return dir;
 }
 
+export type EvalResult = { session: AgentSession; dir: string };
+
 export async function runAgent(options: {
   dir: string;
   prompts: string[];
   model?: string;
   maxTurns?: number;
-}): Promise<{ session: AgentSession; dir: string }> {
+}): Promise<EvalResult> {
   const originalDir = process.cwd();
   process.chdir(options.dir);
   try {
@@ -151,35 +168,53 @@ export async function runAgent(options: {
 
 ### Helper: `scorers.ts`
 
+Scorers use `createScorer` with typed generics. The `output` type matches what `task` returns (`EvalResult`). Scorers return 0–1, or `{ score, metadata }` for richer reporting in the evalite UI.
+
 ```ts
 import { createScorer } from "evalite";
 import { readFile } from "fs/promises";
 import { join } from "path";
 import { existsSync } from "fs";
+import type { EvalResult } from "./setup";
+
+type Input = { files: Record<string, string>; prompts: string[] };
 
 export const fileExists = (filename: string) =>
-  createScorer({
+  createScorer<Input, EvalResult>({
     name: `file-exists:${filename}`,
+    description: `Checks that ${filename} exists in the eval directory`,
     scorer: ({ output }) => {
-      return existsSync(join(output.dir, filename)) ? 1 : 0;
+      const exists = existsSync(join(output.dir, filename));
+      return { score: exists ? 1 : 0, metadata: { path: join(output.dir, filename) } };
     },
   });
 
 export const fileContains = (filename: string, expected: string) =>
-  createScorer({
+  createScorer<Input, EvalResult>({
     name: `file-contains:${filename}`,
+    description: `Checks that ${filename} contains "${expected}"`,
     scorer: async ({ output }) => {
-      const content = await readFile(join(output.dir, filename), "utf-8");
-      return content.includes(expected) ? 1 : 0;
+      try {
+        const content = await readFile(join(output.dir, filename), "utf-8");
+        const found = content.includes(expected);
+        return { score: found ? 1 : 0, metadata: { expected, actual: content } };
+      } catch {
+        return { score: 0, metadata: { error: "file not found" } };
+      }
     },
   });
 
 export const fileNotContains = (filename: string, unexpected: string) =>
-  createScorer({
+  createScorer<Input, EvalResult>({
     name: `file-not-contains:${filename}`,
+    description: `Checks that ${filename} does not contain "${unexpected}"`,
     scorer: async ({ output }) => {
-      const content = await readFile(join(output.dir, filename), "utf-8");
-      return content.includes(unexpected) ? 0 : 1;
+      try {
+        const content = await readFile(join(output.dir, filename), "utf-8");
+        return { score: content.includes(unexpected) ? 0 : 1 };
+      } catch {
+        return { score: 0, metadata: { error: "file not found" } };
+      }
     },
   });
 ```
@@ -217,10 +252,16 @@ evalite("Bug Fix - sum.ts", {
 ## Open questions
 
 1. **Cleanup:** Should temp dirs be cleaned up after each eval run, or retained for debugging? Recommend: retain on failure, clean on success.
-2. **Parallelism:** Evalite defaults to 5 concurrent evals. Each hits the Claude API. May want to set to 1 or 2 initially to avoid rate limits.
-3. **Caching:** Evalite supports caching in watch mode. Worth enabling to save API costs during iteration.
+2. **Concurrency:** Evalite's `maxConcurrency` defaults to 50. Set to 1 initially to avoid rate limits. Increase later.
+3. **Caching:** Evalite supports caching of AI SDK model outputs in watch mode (`cache: true` in config). However, our agent calls the Anthropic SDK directly (not via Vercel AI SDK), so evalite's built-in caching won't apply. We'd need our own caching layer if desired.
 4. **BashSession CWD:** `BashSession` may need the working directory set to the temp dir. Need to verify whether `process.chdir()` is sufficient or if `BashSession` needs explicit cwd support.
 5. **System prompt:** The system prompt loads `CLAUDE.md` files relative to cwd. In eval context, the temp dir won't have a `CLAUDE.md`. Decide whether to seed one per eval or let the agent run without project-specific instructions.
+
+## Compatibility notes
+
+- **Evalite is built on Vitest**, not Bun's test runner. Eval files are `*.eval.ts` (not `*.test.ts`), so they won't conflict with `bun test`. Evalite has its own CLI (`evalite` / `evalite watch`) and does not need a `vitest.config.ts` — it uses `evalite.config.ts` instead, which wraps Vitest config via `defineConfig({ viteConfig: ... })` if needed.
+- **Bun compatibility:** Evalite runs via `bunx evalite`, which uses Bun as the runtime. Vitest (under the hood) should work with Bun, but this is a potential friction point to validate early.
+- **`autoevals` package** provides pre-built LLM-as-judge scorers (e.g., `Factuality`, `ClosedQA`) that we can use for the code reasoning scenario instead of writing our own.
 
 ## Out of scope (v1)
 
