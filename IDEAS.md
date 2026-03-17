@@ -13,12 +13,11 @@
 - progress indicator - activity-gerunds.txt - Terminal spinner — Animate chars (⠋⠙⠹⠸⠼⠴⠦⠧⠇⠏) on a setInterval, clear on response. ~15 lines of code, no deps. Write to stderr with \r so it overwrites itself.
 - prompt caching
 - /clear
-- /init
 - Task tool
-- /context - show how much context is left
-- /cost - show how much context is left, and how many output tokens where consumed, and an estimate of the cost.
+- /context - show how much context is left - show how much context is left, and how many output tokens where consumed, and an estimate of the cost.
 - Organize slash command in a lookup table, including descriptions, for easy /help generation and dispatching
 - Streaming. Switch from messages.create to messages.stream so that tokens appear as they arrive.
+- Deep modules: AgentSession
 
 Review Feedback:
 
