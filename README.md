@@ -34,11 +34,12 @@ The agent follows a classic **agentic loop**:
 ## Features
 
 - **Interactive REPL** with persistent command history across sessions
+- **Agentic loop** — multi-turn tool use with configurable max turns
 - **Bash tool use** — Claude can run shell commands in a persistent bash session
-- **Agentic loop** — multi-turn tool use with configurable max turns (default 20)
 - **Terminal Markdown rendering** — headings, code blocks, tables, lists, bold/italic, links, all with ANSI colors
 - **Bordered tool frames** — tool inputs and outputs are displayed in visual boxes
 - **System prompt from CLAUDE.md** — automatically loads `~/.claude/CLAUDE.md` and `./CLAUDE.md`
+- **Instant CLAUDE.md reloading** - changes to CLAUDE.md immediately affect the next turn
 - **Pipe mode** — use non-interactively: `echo "what is 1+2" | bun start`
 - **Error handling** — rate limits, connection errors, max tokens, and refusals
 - **Sandboxing** — the agent runs inside an [`@anthropic-ai/sandbox-runtime`](https://www.npmjs.com/package/@anthropic-ai/sandbox-runtime) sandbox with configurable filesystem and network restrictions
