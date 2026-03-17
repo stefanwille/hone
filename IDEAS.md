@@ -1,12 +1,10 @@
-- Execute bash in sandbox
-  - https://github.com/anthropic-experimental/sandbox-runtime
 - Use evaluations to allow AI to verify its work
   - srt plus temp directories
   - evalite to get started
 - Protect against prompt injection
 - streaming
 - Self improvement loop: Let the coding agent improve itself by running a ralph loop
-- guardrails - bash
+- guardrails
 - Context window decisions - means managing what's in your messages array as the conversation grows. The problem: every API call sends the entire conversation history. With an agentic coding tool, this blows up fast because tool results (file contents, bash output) are often huge.
 - Execute text editor in docker
 - Ralph loop builtin
