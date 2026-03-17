@@ -8,7 +8,7 @@ import { createReadlineSession } from "./agent/readline/readline";
 import { text } from "node:stream/consumers";
 import { runInSandbox } from "./agent/sandbox/runProgramInSandbox";
 
-async function repl(): Promise<voi {
+async function repl(): Promise<void> {
   const history = await loadReadlineHistory();
   const readlineSession = createReadlineSession(history);
   const agentSession = await createAgentSession();
