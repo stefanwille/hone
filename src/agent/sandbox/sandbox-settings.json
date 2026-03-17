@@ -1,12 +1,27 @@
 {
   "allowPty": true,
   "filesystem": {
-    "denyRead": ["~/.ssh", "~/.aws"],
-    "allowWrite": [".", "/tmp"],
+    "denyRead": [
+      "~/.ssh",
+      "~/.aws",
+      "~/.gnupg",
+      "~/.config/gh",
+      "~/.netrc",
+      "~/.npmrc",
+      "~/.docker",
+      "~/.kube"
+    ],
+    "allowWrite": [
+      ".",
+      "/tmp"
+    ],
     "denyWrite": []
   },
   "network": {
-    "allowedDomains": ["api.anthropic.com", "www.stefanwille.com"],
+    "allowedDomains": [
+      "api.anthropic.com",
+      "www.stefanwille.com"
+    ],
     "deniedDomains": []
   }
 }
