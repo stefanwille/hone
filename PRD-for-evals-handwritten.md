@@ -25,7 +25,9 @@ I want to add evaluations. The motivation is to steer development based on data.
 
 ## Scenarios to get started with
 
-- Ask agent to Write "Hello" into a new file named `newfile.md` - score 1 if file created with correct content, otherwise 0
-- Make ts file with a fibonacci function, but call it X. Ask the agent what X does. Score 1 if fibonacci, otherwise 0
-- Write a ts file with bug. Ask the agent to fix it. Ask LLM-as-a-judge if it is fixed.
-- Ask agent to make a plan for building a new bun project that build a CLI for scoring bowling games, with the inputs given via stdin. Use LLM-as-a-judge to score.
+- Basic arithmetic: Ask agent what 1 + 2 is - deterministic judge
+- Tool calling: Ask agent to Write "Hello" into a new file named `newfile.md` - score 1 if file created with correct content, otherwise 0
+- Multi tool calling: Ask agent to read file `existingfile.md` and capitalize all words - score 1 if file updated with correct content, otherwise 0
+- Code understanding: Make ts file with a fibonacci function, but call it X. Ask the agent what X does. Score 1 if fibonacci, otherwise 0
+- Debugging: Write a ts file with bug. Ask the agent to fix it. Ask LLM-as-a-judge if it is fixed.
+- Planning: Ask agent to make a plan for building a new bun project that build a CLI for scoring bowling games, with the inputs given via stdin. Use LLM-as-a-judge to score.
