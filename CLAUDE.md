@@ -24,3 +24,4 @@ Run these in order to verify clean state:
 
 - Order test scenarios with happy paths first.
 - Prefer named functions over consts-with-arrow-function.
+- Test descriptions are written in third person, not using should. Good: `it("works")`, Bad: `it("should work")`
