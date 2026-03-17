@@ -15,6 +15,7 @@ I want to add evaluations. The motivation is to steer development based on data.
   - Deterministic
   - LLM as a judge
 - beforeEach and afterEach
+- beforeAll - required for runInSandbox
 
 ## Framework specific to the Agent Coder
 
