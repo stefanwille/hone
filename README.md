@@ -41,6 +41,7 @@ The agent follows a classic **agentic loop**:
 - **System prompt from CLAUDE.md** — automatically loads `~/.claude/CLAUDE.md` and `./CLAUDE.md`
 - **Pipe mode** — use non-interactively: `echo "what is 1+2" | bun start`
 - **Error handling** — rate limits, connection errors, max tokens, and refusals
+- **Sandboxing** — the agent runs inside an [`@anthropic-ai/sandbox-runtime`](https://www.npmjs.com/package/@anthropic-ai/sandbox-runtime) sandbox with configurable filesystem and network restrictions
 
 ## Getting Started
 
@@ -87,6 +88,8 @@ echo "Explain the difference between TCP and UDP" | bun start
 **Tool System** (`tools.ts`) — tools are defined with [arktype](https://arktype.io) schemas for input validation. The bash tool uses Anthropic's special `bash_20250124` tool type for computer use.
 
 **Markdown Renderer** (`render-markdown.ts`) — a from-scratch terminal Markdown renderer. Converts headings, code fences, tables, blockquotes, lists, inline formatting, and links into styled ANSI output.
+
+**Sandbox** (`sandbox/runProgramInSandbox.ts`) — wraps the agent process in an `@anthropic-ai/sandbox-runtime` sandbox. On first launch (no `SRT_SANDBOXED` env var), it loads `sandbox-settings.json`, initializes the sandbox policy, and re-spawns itself inside the sandbox. Policy controls filesystem read/write access and allowed network domains.
 
 ## Development
 
