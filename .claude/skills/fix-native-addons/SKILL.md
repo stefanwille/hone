@@ -21,25 +21,11 @@ Error: Could not locate the bindings file. Tried:
 
 ## Fix
 
-Rebuild the native addon in its `node_modules` directory:
-
-```bash
-cd node_modules/<package>
-npx --yes node-gyp rebuild
-```
-
 ### Example: better-sqlite3 (used by evalite)
 
 ```bash
-cd node_modules/better-sqlite3
-npx --yes node-gyp rebuild
+bun x node-gyp rebuild --directory node_modules/better-sqlite3
 ```
-
-## Known Affected Packages in This Repo
-
-| Package | Pulled in by | Fix |
-|---------|-------------|-----|
-| `better-sqlite3` | `evalite` | `npx --yes node-gyp rebuild` in `node_modules/better-sqlite3` |
 
 ## Notes
 
