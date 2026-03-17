@@ -1,0 +1,31 @@
+# Evaluations
+
+I want to add evaluations. The motivation is to steer development based on data.
+
+## Evaluations Framework
+
+- At the start, find all files in a given directory whose filenames end with .eval.ts. Run these dynamically as evals.
+- Track the costs, for agent and for the LLM judge. Show them in the summary.
+- At the end, show a summary:
+  - scenarios and their scores and cost
+  - Total score and total cost
+- Write eval results to JSON file to enable visualization over time.
+- Abstract Scorer interface.
+- Enable different scorer types:
+  - Deterministic
+  - LLM as a judge
+- beforeEach and afterEach
+
+## Framework specific to the Agent Coder
+
+- Run evals against real Claude API
+- Model configurable per eval
+- Scoring based on work directory and agentSession
+- Eval setup: Run eval program using runInSandbox, create temp dir, copy files, run agentRequest, score the result
+
+## Scenarios to get started with
+
+- Ask agent to Write "Hello" into a new file named `newfile.md` - score 1 if file created with correct content, otherwise 0
+- Make ts file with a fibonacci function, but call it X. Ask the agent what X does. Score 1 if fibonacci, otherwise 0
+- Write a ts file with bug. Ask the agent to fix it. Ask LLM-as-a-judge if it is fixed.
+- Ask agent to make a plan for building a new bun project that build a CLI for scoring bowling games, with the inputs given via stdin. Use LLM-as-a-judge to score.
