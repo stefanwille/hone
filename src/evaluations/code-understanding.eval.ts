@@ -4,6 +4,7 @@ import { mkdtempSync, readFileSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { runAgent } from "./utils/run-agent";
+import { FibonacciMentioned } from "./scorers/FibonacciMentioned";
 
 let tempDir: string;
 
@@ -41,7 +42,7 @@ evalite("Code understanding", {
       encoding: "utf-8",
     });
   },
-  scorers: [Levenshtein],
+  scorers: [FibonacciMentioned],
   columns: (_opts) => {
     return [
       { label: "Input", value: _opts.input.prompt },

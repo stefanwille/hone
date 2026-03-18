@@ -12,8 +12,8 @@
     "test:watch": "bun test --watch",
     "typecheck": "tsc --noEmit",
     "verify": "bun format && bun lint && bun typecheck && bun test",
-    "eval": "evalite run",
-    "eval:ui": "evalite serve"
+    "eval": "node --env-file=.env.local node_modules/.bin/evalite run",
+    "eval:ui": "node --env-file=.env.local node_modules/.bin/evalite serve"
   },
   "devDependencies": {
     "oxfmt": "^0.36.0",

@@ -2,7 +2,7 @@ import { evalite } from "evalite";
 import { mkdtemp, readFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { TrimmedLevenshtein } from "./scorers/scorers";
+import { TrimmedLevenshtein } from "./scorers/TrimmedLevenshtein";
 import { runAgent } from "./utils/run-agent";
 
 let tempDir: string;
