@@ -58,17 +58,19 @@ async function batchMode(model: string | undefined) {
   process.exit(0);
 }
 
-async function program() {
-  const { model } = getCliOptions();
-  if (process.stdin.isTTY) {
-    await repl(model);
-  } else {
-    await batchMode(model);
-  }
-}
-
 async function main() {
-  await runInSandbox(program);
+  const { model, cwd } = getCliOptions();
+  const program = async () => {
+    if (cwd) {
+      process.chdir(cwd);
+    }
+    if (process.stdin.isTTY) {
+      await repl(model);
+    } else {
+      await batchMode(model);
+    }
+  };
+  await runInSandbox(program, cwd);
 }
 
 main().catch(console.error);

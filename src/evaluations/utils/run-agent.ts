@@ -3,15 +3,17 @@ import { spawn } from "node:child_process";
 type RunAgentOptions = {
   prompt: string;
   model?: string;
+  cwd?: string;
 };
 
 const DEFAULT_MODEL_FOR_EVALS = "haiku";
 
 export function runAgent(options: RunAgentOptions): Promise<string> {
-  const { prompt, model } = options;
+  const { prompt, model, cwd } = options;
   const modelArgs = ["--model", model ?? DEFAULT_MODEL_FOR_EVALS];
+  const cwdArgs = cwd ? ["--cwd", cwd] : [];
   return new Promise((resolve, reject) => {
-    const proc = spawn("bun", ["start", ...modelArgs], {
+    const proc = spawn("bun", ["start", ...modelArgs, ...cwdArgs], {
       stdio: ["pipe", "pipe", "pipe"],
       env: { ...process.env },
     });

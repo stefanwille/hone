@@ -7,20 +7,28 @@ import { spawn } from "child_process";
 
 export type Program = () => Promise<void>;
 
-export async function runInSandbox(program: Program) {
+export async function runInSandbox(program: Program, cwd?: string) {
   if (Bun.env.SRT_SANDBOXED) {
     // Child: Run the actual agent
     await program();
   } else {
     // Parent
-    await relaunchProgramInSandbox();
+    await relaunchProgramInSandbox(cwd);
   }
 }
 
-async function relaunchProgramInSandbox() {
+async function relaunchProgramInSandbox(cwd?: string) {
   // Parent: re-launch ourselves inside the sandbox
 
   const config = await loadSandboxRuntimeConfig();
+
+  if (cwd) {
+    config.filesystem.allowWrite = [
+      ...(config.filesystem.allowWrite ?? []),
+      cwd,
+    ];
+  }
+
   await SandboxManager.initialize(config);
   const cmd = await SandboxManager.wrapWithSandbox(
     `SRT_SANDBOXED=1 ${process.execPath} ${process.argv.slice(1).join(" ")}`,
