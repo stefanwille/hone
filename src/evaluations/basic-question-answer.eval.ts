@@ -7,11 +7,11 @@ type RunAgentOptions = {
   model?: string;
 };
 
-const DEFAULT_MODEL = "haiku";
+const DEFAULT_MODEL_FOR_EVALS = "haiku";
 
 function runAgent(options: RunAgentOptions): Promise<string> {
   const { prompt, model } = options;
-  const modelArgs = ["--model", model ?? DEFAULT_MODEL];
+  const modelArgs = ["--model", model ?? DEFAULT_MODEL_FOR_EVALS];
   return new Promise((resolve, reject) => {
     const proc = spawn("bun", ["start", ...modelArgs], {
       stdio: ["pipe", "pipe", "pipe"],
