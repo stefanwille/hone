@@ -1,6 +1,7 @@
 import { spawn } from "node:child_process";
 import { Levenshtein } from "autoevals";
 import { evalite } from "evalite";
+import { readFile } from "node:fs/promises";
 
 type RunAgentOptions = {
   prompt: string;
@@ -33,15 +34,19 @@ function runAgent(options: RunAgentOptions): Promise<string> {
   });
 }
 
-evalite("Basic question", {
+evalite("Tool calling", {
   data: [
     {
       input: {
-        prompt: "What is 1 + 2? Answer with just the result.",
+        prompt:
+          "Write 'Hello world' to a file called 'hello.txt' in the current directory.",
       },
-      expected: "3",
+      expected: "Hello world\n",
     },
   ],
-  task: async (input) => await runAgent({ prompt: input.prompt }),
+  task: async (input) => {
+    await runAgent({ prompt: input.prompt });
+    return await readFile("hello.txt", { encoding: "utf-8" });
+  },
   scorers: [Levenshtein],
 });
