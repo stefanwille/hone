@@ -1,5 +1,5 @@
 import { evalite } from "evalite";
-import { mkdtemp, readFile, rm } from "node:fs/promises";
+import { mkdtemp, readFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { TrimmedLevenshtein } from "./scorers/scorers";
@@ -17,12 +17,8 @@ evalite("Tool calling", {
   ],
   task: async (input) => {
     const tempDir = await mkdtemp(join(tmpdir(), "ai-coding-agent-eval"));
-    try {
-      await runAgent({ prompt: input.prompt, cwd: tempDir });
-      return await readFile(join(tempDir, "hello.txt"), { encoding: "utf-8" });
-    } finally {
-      await rm(tempDir, { recursive: true, force: true });
-    }
+    await runAgent({ prompt: input.prompt, cwd: tempDir });
+    return await readFile(join(tempDir, "hello.txt"), { encoding: "utf-8" });
   },
   scorers: [TrimmedLevenshtein],
 });
