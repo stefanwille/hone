@@ -58,7 +58,7 @@ async function batchMode(model: string | undefined) {
   process.exit(0);
 }
 
-async function program(cliOptions: CliOptions) {
+async function sandboxedMain(cliOptions: CliOptions) {
   const { model, cwd } = cliOptions;
   if (cwd) {
     process.chdir(cwd);
@@ -72,10 +72,10 @@ async function program(cliOptions: CliOptions) {
 
 async function main() {
   const cliOptions = getCliOptions();
-  const programClosure = async () => {
-    await program(cliOptions);
+  const program = async () => {
+    await sandboxedMain(cliOptions);
   };
-  await runInSandbox(programClosure, cliOptions.cwd);
+  await runInSandbox(program, cliOptions.cwd);
 }
 
 main().catch(console.error);
