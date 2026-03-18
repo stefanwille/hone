@@ -1,7 +1,7 @@
 import { spawn } from "node:child_process";
-import { Levenshtein } from "autoevals";
 import { evalite } from "evalite";
 import { readFile } from "node:fs/promises";
+import { TrimmedMatch } from "./scorers";
 
 type RunAgentOptions = {
   prompt: string;
@@ -48,15 +48,5 @@ evalite("Tool calling", {
     await runAgent({ prompt: input.prompt });
     return await readFile("hello.txt", { encoding: "utf-8" });
   },
-  scorers: [
-    {
-      name: "trimmed-match",
-      scorer: ({ output, expected }) => {
-        return {
-          score: output.trim() === expected?.trim() ? 1 : 0,
-          metadata: { matched: output === expected },
-        };
-      },
-    },
-  ],
+  scorers: [TrimmedMatch],
 });
