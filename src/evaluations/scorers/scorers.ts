@@ -1,10 +1,14 @@
-export const TrimmedMatch = {
-  name: "trimmed-match",
-  description: "Checks if the output is equal to the expected value, trimmed",
-  scorer: ({ output, expected }: { output: string; expected?: string }) => {
-    return {
-      score: output.trim() === expected?.trim() ? 1 : 0,
-      metadata: { matched: output === expected },
-    };
+import { Levenshtein } from "autoevals";
+
+export const TrimmedLevenshtein = {
+  name: "trimmed-levenshtein",
+  description:
+    "Scores output similarity using Levenshtein distance after trimming",
+  scorer: async ({ output, expected }: { output: string; expected?: string }) => {
+    const result = await Levenshtein({
+      output: output.trim(),
+      expected: expected?.trim(),
+    });
+    return { score: result.score ?? 0, metadata: result.metadata };
   },
 };
