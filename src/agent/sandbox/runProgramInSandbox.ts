@@ -30,7 +30,6 @@ async function relaunchProgramInSandbox() {
 
 async function loadSandboxRuntimeConfig(): Promise<SandboxRuntimeConfig> {
   const POLICY_FILE = new URL("sandbox-settings.json", import.meta.url);
-  console.log("Loading sandbox policy from", POLICY_FILE.toString());
   const SANDBOX_POLICY = await Bun.file(POLICY_FILE).json();
   return SandboxRuntimeConfigSchema.parse(SANDBOX_POLICY);
 }

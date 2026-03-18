@@ -5,8 +5,8 @@ I want to add evaluations. The motivation is to steer development based on data.
 ## Framework specific to the Agent Coder
 
 - ✅ Run evalite program using srt CLI,
-- Run evals against real Claude API
-- Model configurable per eval
+- ✅ Run evals against real Claude API
+- ✅ Model configurable per eval
 - Scoring based on work directory and agentSession
 - Create a temp dir for the run.
 - beforeEach: create dir for the scenario, copy files, run agentRequest, score the result.

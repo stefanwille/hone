@@ -13,7 +13,7 @@ export function runAgent(options: RunAgentOptions): Promise<string> {
   return new Promise((resolve, reject) => {
     const proc = spawn("bun", ["start", ...modelArgs], {
       stdio: ["pipe", "pipe", "pipe"],
-      env: { ...process.env, SRT_SANDBOXED: "1" },
+      env: { ...process.env },
     });
     let stdout = "";
     proc.stdout.on("data", (chunk: Buffer) => {
