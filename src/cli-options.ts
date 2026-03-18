@@ -9,6 +9,8 @@ const MODEL_MAP: Record<ModelAlias, Anthropic.Messages.Model> = {
   opus: "claude-opus-4-6",
 };
 
+const DEFAULT_MODEL: Anthropic.Messages.Model = "claude-sonnet-4-6";
+
 export interface CliOptions {
   model?: Anthropic.Messages.Model;
 }
@@ -21,15 +23,8 @@ export function getCliOptions(): { model: string | undefined } {
     allowPositionals: true,
   });
 
-  let model: string | undefined;
-  if (values.model) {
-    const alias = values.model as ModelAlias;
-    if (!(alias in MODEL_MAP)) {
-      console.error(`Invalid model: ${values.model}. Use: haiku, sonnet, opus`);
-      process.exit(1);
-    }
-    model = MODEL_MAP[alias];
-  }
+  const model: Anthropic.Messages.Model =
+    MODEL_MAP[(values.model as ModelAlias) ?? "--"] ?? DEFAULT_MODEL;
 
   return { model };
 }
