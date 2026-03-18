@@ -1,3 +1,4 @@
+import { parseArgs } from "node:util";
 import { createAgentSession } from "./agent/agent-session";
 import { agentRequest } from "./agent/agent-request";
 import {
@@ -8,10 +9,39 @@ import { createReadlineSession } from "./agent/readline/readline";
 import { text } from "node:stream/consumers";
 import { runInSandbox } from "./agent/sandbox/runProgramInSandbox";
 
-async function repl(): Promise<void> {
+type ModelAlias = "haiku" | "sonnet" | "opus";
+
+const MODEL_MAP: Record<ModelAlias, string> = {
+  haiku: "claude-haiku-4-5-20251001",
+  sonnet: "claude-sonnet-4-6",
+  opus: "claude-opus-4-6",
+};
+
+function getCliOptions(): { model: string | undefined } {
+  const { values } = parseArgs({
+    options: {
+      model: { type: "string", short: "m" },
+    },
+    allowPositionals: true,
+  });
+
+  let model: string | undefined;
+  if (values.model) {
+    const alias = values.model as ModelAlias;
+    if (!(alias in MODEL_MAP)) {
+      console.error(`Invalid model: ${values.model}. Use: haiku, sonnet, opus`);
+      process.exit(1);
+    }
+    model = MODEL_MAP[alias];
+  }
+
+  return { model };
+}
+
+async function repl(model: string | undefined): Promise<void> {
   const history = await loadReadlineHistory();
   const readlineSession = createReadlineSession(history);
-  const agentSession = await createAgentSession();
+  const agentSession = await createAgentSession({ model });
   console.log("/help for available commands.\n");
 
   for (;;) {
@@ -50,18 +80,19 @@ async function repl(): Promise<void> {
   process.exit(0);
 }
 
-async function batchMode() {
+async function batchMode(model: string | undefined) {
   const input = await text(process.stdin);
-  const agentSession = await createAgentSession();
+  const agentSession = await createAgentSession({ model });
   await agentRequest(input, agentSession);
   process.exit(0);
 }
 
 async function program() {
+  const { model } = getCliOptions();
   if (process.stdin.isTTY) {
-    await repl();
+    await repl(model);
   } else {
-    await batchMode();
+    await batchMode(model);
   }
 }
 

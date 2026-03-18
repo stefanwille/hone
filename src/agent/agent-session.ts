@@ -32,9 +32,9 @@ export type AgentSession = {
 const DEFAULT_MODEL = "claude-sonnet-4-6";
 
 export async function createAgentSession(options?: {
-  model: string;
-  maxTokens: number;
-  maxTurns: number;
+  model?: string;
+  maxTokens?: number;
+  maxTurns?: number;
 }): Promise<AgentSession> {
   const {
     model = DEFAULT_MODEL,
