@@ -7,7 +7,7 @@ import {
   saveReadlineHistory,
 } from "./agent/readline/readline-history";
 import { runInSandbox } from "./agent/sandbox/runProgramInSandbox";
-import { getCliOptions } from "./cli-options";
+import { getCliOptions, type CliOptions } from "./cli-options";
 
 async function repl(model: string | undefined): Promise<void> {
   const history = await loadReadlineHistory();
@@ -58,19 +58,24 @@ async function batchMode(model: string | undefined) {
   process.exit(0);
 }
 
+async function program(cliOptions: CliOptions) {
+  const { model, cwd } = cliOptions;
+  if (cwd) {
+    process.chdir(cwd);
+  }
+  if (process.stdin.isTTY) {
+    await repl(model);
+  } else {
+    await batchMode(model);
+  }
+}
+
 async function main() {
-  const { model, cwd } = getCliOptions();
-  const program = async () => {
-    if (cwd) {
-      process.chdir(cwd);
-    }
-    if (process.stdin.isTTY) {
-      await repl(model);
-    } else {
-      await batchMode(model);
-    }
+  const cliOptions = getCliOptions();
+  const programClosure = async () => {
+    await program(cliOptions);
   };
-  await runInSandbox(program, cwd);
+  await runInSandbox(programClosure, cliOptions.cwd);
 }
 
 main().catch(console.error);
