@@ -5,6 +5,8 @@ import { join } from "node:path";
 import { TrimmedLevenshtein } from "./scorers/scorers";
 import { runAgent } from "./utils/run-agent";
 
+let tempDir: string;
+
 evalite("Tool calling", {
   data: [
     {
@@ -16,9 +18,12 @@ evalite("Tool calling", {
     },
   ],
   task: async (input) => {
-    const tempDir = await mkdtemp(join(tmpdir(), "ai-coding-agent-eval"));
+    tempDir = await mkdtemp(join(tmpdir(), "ai-coding-agent-eval"));
     await runAgent({ prompt: input.prompt, cwd: tempDir });
     return await readFile(join(tempDir, "hello.txt"), { encoding: "utf-8" });
   },
   scorers: [TrimmedLevenshtein],
+  columns: (_opts) => {
+    return [{ label: "Temp Dir", value: tempDir }];
+  },
 });
