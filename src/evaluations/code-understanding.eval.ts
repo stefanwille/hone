@@ -1,10 +1,9 @@
-import { Levenshtein } from "autoevals";
 import { evalite } from "evalite";
 import { mkdtempSync, readFileSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { runAgent } from "./utils/run-agent";
 import { FibonacciMentioned } from "./scorers/FibonacciMentioned";
+import { runAgent } from "./utils/run-agent";
 
 let tempDir: string;
 
