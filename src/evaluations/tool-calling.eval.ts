@@ -41,12 +41,22 @@ evalite("Tool calling", {
         prompt:
           "Write 'Hello world' to a file called 'hello.txt' in the current directory.",
       },
-      expected: "Hello world\n",
+      expected: "Hello world",
     },
   ],
   task: async (input) => {
     await runAgent({ prompt: input.prompt });
     return await readFile("hello.txt", { encoding: "utf-8" });
   },
-  scorers: [Levenshtein],
+  scorers: [
+    {
+      name: "trimmed-match",
+      scorer: ({ output, expected }) => {
+        return {
+          score: output.trim() === expected?.trim() ? 1 : 0,
+          metadata: { matched: output === expected },
+        };
+      },
+    },
+  ],
 });
