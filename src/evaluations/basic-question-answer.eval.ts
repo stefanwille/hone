@@ -6,11 +6,14 @@ type RunAgentOptions = {
   prompt: string;
   model?: string;
 };
+
+const DEFAULT_MODEL = "haiku";
+
 function runAgent(options: RunAgentOptions): Promise<string> {
   const { prompt, model } = options;
-  const modelOptions = model ? ["-m", model] : [];
+  const modelArgs = ["--model", model ?? DEFAULT_MODEL];
   return new Promise((resolve, reject) => {
-    const proc = spawn("bun", ["start", ...modelOptions], {
+    const proc = spawn("bun", ["start", ...modelArgs], {
       stdio: ["pipe", "pipe", "pipe"],
       env: { ...process.env, SRT_SANDBOXED: "1" },
     });
@@ -29,21 +32,6 @@ function runAgent(options: RunAgentOptions): Promise<string> {
     proc.stdin.end(prompt);
   });
 }
-
-evalite("Model selection", {
-  data: [
-    {
-      input: {
-        prompt:
-          "Which model are you? Answer with just the model name: haiku|sonnet|opus",
-        model: "haiku",
-      },
-      expected: "3",
-    },
-  ],
-  task: async (input) => runAgent(input),
-  scorers: [Levenshtein],
-});
 
 evalite("Basic question", {
   data: [

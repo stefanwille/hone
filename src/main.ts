@@ -1,42 +1,13 @@
-import { parseArgs } from "node:util";
-import { createAgentSession } from "./agent/agent-session";
+import { text } from "node:stream/consumers";
 import { agentRequest } from "./agent/agent-request";
+import { createAgentSession } from "./agent/agent-session";
+import { createReadlineSession } from "./agent/readline/readline";
 import {
   loadReadlineHistory,
   saveReadlineHistory,
 } from "./agent/readline/readline-history";
-import { createReadlineSession } from "./agent/readline/readline";
-import { text } from "node:stream/consumers";
 import { runInSandbox } from "./agent/sandbox/runProgramInSandbox";
-
-type ModelAlias = "haiku" | "sonnet" | "opus";
-
-const MODEL_MAP: Record<ModelAlias, string> = {
-  haiku: "claude-haiku-4-5-20251001",
-  sonnet: "claude-sonnet-4-6",
-  opus: "claude-opus-4-6",
-};
-
-function getCliOptions(): { model: string | undefined } {
-  const { values } = parseArgs({
-    options: {
-      model: { type: "string", short: "m" },
-    },
-    allowPositionals: true,
-  });
-
-  let model: string | undefined;
-  if (values.model) {
-    const alias = values.model as ModelAlias;
-    if (!(alias in MODEL_MAP)) {
-      console.error(`Invalid model: ${values.model}. Use: haiku, sonnet, opus`);
-      process.exit(1);
-    }
-    model = MODEL_MAP[alias];
-  }
-
-  return { model };
-}
+import { getCliOptions } from "./cli-options";
 
 async function repl(model: string | undefined): Promise<void> {
   const history = await loadReadlineHistory();

@@ -14,7 +14,7 @@ export type AgentSession = {
   mode: Mode;
   tools: Tool[];
   anthropicTools: Anthropic.Messages.ToolUnion[];
-  model: string;
+  model: Anthropic.Messages.Model;
   /**
    * The maximum number of tokens to generate in a single response.
    */
