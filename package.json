@@ -12,7 +12,8 @@
     "test:watch": "bun test --watch",
     "typecheck": "tsc --noEmit",
     "verify": "bun format && bun lint && bun typecheck && bun test",
-    "eval": "evalite run"
+    "eval": "evalite run",
+    "eval:ui": "evalite serve"
   },
   "devDependencies": {
     "oxfmt": "^0.36.0",
