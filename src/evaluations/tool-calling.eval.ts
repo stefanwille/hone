@@ -1,7 +1,7 @@
 import { evalite } from "evalite";
 import { readFile } from "node:fs/promises";
-import { runAgent } from "./run-agent";
-import { TrimmedMatch } from "./scorers";
+import { runAgent } from "./utils/run-agent";
+import { TrimmedMatch } from "./scorers/scorers";
 
 evalite("Tool calling", {
   data: [

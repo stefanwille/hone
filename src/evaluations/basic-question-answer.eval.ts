@@ -1,6 +1,6 @@
 import { Levenshtein } from "autoevals";
 import { evalite } from "evalite";
-import { runAgent } from "./run-agent";
+import { runAgent } from "./utils/run-agent";
 
 evalite("Basic question", {
   data: [
