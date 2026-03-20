@@ -128,6 +128,19 @@ describe("textEditor - str_replace", () => {
     expect(result).toContain("No match found");
   });
 
+  it("returns error when old_str is empty and leaves the file unchanged", async () => {
+    const result = await textEditor.run({
+      command: "str_replace",
+      path: TMP_FILE,
+      old_str: "",
+      new_str: "x",
+    });
+    expect(result).toContain("empty");
+
+    const content = await Bun.file(TMP_FILE).text();
+    expect(content).toBe("hello world\n");
+  });
+
   it("returns error when old_str matches more than once", async () => {
     await Bun.write(TMP_FILE, "foo foo\n");
     const result = await textEditor.run({

@@ -16,6 +16,10 @@ export async function strReplace(input: StrReplaceInput): Promise<string> {
     return `File ${input.path} does not exist`;
   }
 
+  if (input.old_str === "") {
+    return "Error: old_str must not be empty.";
+  }
+
   const content = await file.text();
   const count = content.split(input.old_str).length - 1;
 
