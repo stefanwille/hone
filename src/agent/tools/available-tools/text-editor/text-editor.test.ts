@@ -37,6 +37,15 @@ describe("textEditor - view", () => {
     expect(result).toBe("line one");
   });
 
+  it("returns empty string when max_characters is zero for a file", async () => {
+    const result = await textEditor.run({
+      command: "view",
+      path: TMP_FILE,
+      max_characters: 0,
+    });
+    expect(result).toBe("");
+  });
+
   it("returns directory listing for a directory", async () => {
     await mkdir(TMP_DIR, { recursive: true });
     await Bun.write(`${TMP_DIR}/alpha.txt`, "a");
@@ -49,6 +58,22 @@ describe("textEditor - view", () => {
 
     await unlink(`${TMP_DIR}/alpha.txt`);
     await unlink(`${TMP_DIR}/beta.txt`);
+    await rmdir(TMP_DIR);
+  });
+
+  it("returns empty string when max_characters is zero for a directory", async () => {
+    await mkdir(TMP_DIR, { recursive: true });
+    await Bun.write(`${TMP_DIR}/alpha.txt`, "a");
+
+    const result = await textEditor.run({
+      command: "view",
+      path: TMP_DIR,
+      max_characters: 0,
+    });
+
+    expect(result).toBe("");
+
+    await unlink(`${TMP_DIR}/alpha.txt`);
     await rmdir(TMP_DIR);
   });
 

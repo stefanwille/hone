@@ -6,14 +6,24 @@ export const ViewInputSchema = type({
   path: "string",
   "view_range?": ["number", "number"],
   /**
-   * Maximum number of characters to display when viewing a file. If not specified,
-   * defaults to displaying the full file.
+   * Maximum number of characters to display when viewing a file or directory listing.
+   * Omitted or null means no limit; 0 returns an empty string.
    */
   "max_characters?": "number | null",
   "+": "reject",
 });
 
 type ViewInput = typeof ViewInputSchema.infer;
+
+function truncateToMaxCharacters(
+  content: string,
+  maxCharacters: number | null | undefined,
+): string {
+  if (typeof maxCharacters !== "number") {
+    return content;
+  }
+  return content.slice(0, maxCharacters);
+}
 
 async function fileType(
   path: string,
@@ -38,11 +48,8 @@ async function viewDirectory(input: ViewInput): Promise<string> {
     return "Error: text editor view command on a directory does not support view_range";
   }
   const entries = await readdir(input.path);
-  let content = entries.join("\n");
-  if (input.max_characters) {
-    content = content.slice(0, input.max_characters);
-  }
-  return content;
+  const content = entries.join("\n");
+  return truncateToMaxCharacters(content, input.max_characters);
 }
 
 async function viewFile(input: ViewInput): Promise<string> {
@@ -55,10 +62,7 @@ async function viewFile(input: ViewInput): Promise<string> {
     content = slicedLines.join("\n");
   }
 
-  if (input.max_characters) {
-    content = content.slice(0, input.max_characters);
-  }
-  return content;
+  return truncateToMaxCharacters(content, input.max_characters);
 }
 
 export async function view(input: ViewInput): Promise<string> {
