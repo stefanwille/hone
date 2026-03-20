@@ -78,11 +78,12 @@ describe("textEditor - view", () => {
   });
 
   it("returns error for a non-existent path", async () => {
+    const path = "/tmp/does-not-exist-text-editor.txt";
     const result = await textEditor.run({
       command: "view",
-      path: "/tmp/does-not-exist-text-editor.txt",
+      path,
     });
-    expect(result).toContain("does not exist");
+    expect(result).toBe(`Error: File ${path} does not exist`);
   });
 });
 
@@ -109,13 +110,14 @@ describe("textEditor - str_replace", () => {
   });
 
   it("returns error when path does not exist", async () => {
+    const path = "/tmp/no-such-file-text-editor.txt";
     const result = await textEditor.run({
       command: "str_replace",
-      path: "/tmp/no-such-file-text-editor.txt",
+      path,
       old_str: "hello",
       new_str: "goodbye",
     });
-    expect(result).toContain("does not exist");
+    expect(result).toBe(`Error: File ${path} does not exist`);
   });
 
   it("returns error when old_str has no match", async () => {

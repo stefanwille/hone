@@ -73,7 +73,7 @@ export async function view(input: ViewInput): Promise<string> {
     case "file":
       return await viewFile(input);
     case "not_found":
-      return `File ${input.path} does not exist`;
+      return `Error: File ${input.path} does not exist`;
     default:
       throw new Error(`Unknown file type at path: ${input.path}`);
   }

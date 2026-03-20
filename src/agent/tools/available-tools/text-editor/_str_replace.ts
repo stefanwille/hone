@@ -13,7 +13,7 @@ type StrReplaceInput = typeof StrReplaceInputSchema.infer;
 export async function strReplace(input: StrReplaceInput): Promise<string> {
   const file = Bun.file(input.path);
   if (!(await file.exists())) {
-    return `File ${input.path} does not exist`;
+    return `Error: File ${input.path} does not exist`;
   }
 
   if (input.old_str === "") {
