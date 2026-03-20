@@ -14,27 +14,34 @@ describe("textEditor - view", () => {
     await unlink(TMP_FILE).catch(() => {});
   });
 
-  it("returns full file content", async () => {
+  it("returns file content with cat -n header and line numbers", async () => {
     const result = await textEditor.run({ command: "view", path: TMP_FILE });
-    expect(result).toBe("line one\nline two\nline three\n");
+    expect(result).toContain(
+      `Here's the result of running \`cat -n\` on ${TMP_FILE}:`,
+    );
+    expect(result).toContain("     1\tline one");
+    expect(result).toContain("     2\tline two");
+    expect(result).toContain("     3\tline three");
   });
 
-  it("returns a subset of lines when view_range is provided", async () => {
+  it("returns a subset of lines with correct line numbers when view_range is provided", async () => {
     const result = await textEditor.run({
       command: "view",
       path: TMP_FILE,
       view_range: [2, 3],
     });
-    expect(result).toBe("line two\nline three");
+    expect(result).toContain("     2\tline two");
+    expect(result).toContain("     3\tline three");
+    expect(result).not.toContain("     1\tline one");
   });
 
   it("truncates output when max_characters is set", async () => {
     const result = await textEditor.run({
       command: "view",
       path: TMP_FILE,
-      max_characters: 8,
+      max_characters: 10,
     });
-    expect(result).toBe("line one");
+    expect(result).toBe("Here's the");
   });
 
   it("returns empty string when max_characters is zero for a file", async () => {
@@ -46,18 +53,49 @@ describe("textEditor - view", () => {
     expect(result).toBe("");
   });
 
-  it("returns directory listing for a directory", async () => {
+  it("returns sorted directory listing with full paths", async () => {
     await mkdir(TMP_DIR, { recursive: true });
-    await Bun.write(`${TMP_DIR}/alpha.txt`, "a");
     await Bun.write(`${TMP_DIR}/beta.txt`, "b");
+    await Bun.write(`${TMP_DIR}/alpha.txt`, "a");
 
     const result = await textEditor.run({ command: "view", path: TMP_DIR });
 
-    expect(result).toContain("alpha.txt");
-    expect(result).toContain("beta.txt");
+    expect(result).toBe(`${TMP_DIR}/alpha.txt\n${TMP_DIR}/beta.txt`);
 
     await unlink(`${TMP_DIR}/alpha.txt`);
     await unlink(`${TMP_DIR}/beta.txt`);
+    await rmdir(TMP_DIR);
+  });
+
+  it("skips hidden files in directory listing", async () => {
+    await mkdir(TMP_DIR, { recursive: true });
+    await Bun.write(`${TMP_DIR}/.hidden`, "h");
+    await Bun.write(`${TMP_DIR}/visible.txt`, "v");
+
+    const result = await textEditor.run({ command: "view", path: TMP_DIR });
+
+    expect(result).toContain("visible.txt");
+    expect(result).not.toContain(".hidden");
+
+    await unlink(`${TMP_DIR}/.hidden`);
+    await unlink(`${TMP_DIR}/visible.txt`);
+    await rmdir(TMP_DIR);
+  });
+
+  it("lists subdirectory entries at depth 1", async () => {
+    await mkdir(`${TMP_DIR}/sub`, { recursive: true });
+    await Bun.write(`${TMP_DIR}/root.txt`, "r");
+    await Bun.write(`${TMP_DIR}/sub/child.txt`, "c");
+
+    const result = await textEditor.run({ command: "view", path: TMP_DIR });
+
+    expect(result).toContain(`${TMP_DIR}/root.txt`);
+    expect(result).toContain(`${TMP_DIR}/sub`);
+    expect(result).toContain(`${TMP_DIR}/sub/child.txt`);
+
+    await unlink(`${TMP_DIR}/sub/child.txt`);
+    await rmdir(`${TMP_DIR}/sub`);
+    await unlink(`${TMP_DIR}/root.txt`);
     await rmdir(TMP_DIR);
   });
 
@@ -74,6 +112,21 @@ describe("textEditor - view", () => {
     expect(result).toBe("");
 
     await unlink(`${TMP_DIR}/alpha.txt`);
+    await rmdir(TMP_DIR);
+  });
+
+  it("returns error when view_range is used on a directory", async () => {
+    await mkdir(TMP_DIR, { recursive: true });
+
+    const result = await textEditor.run({
+      command: "view",
+      path: TMP_DIR,
+      view_range: [1, 2],
+    });
+
+    expect(result).toContain("view_range");
+    expect(result).toContain("directory");
+
     await rmdir(TMP_DIR);
   });
 

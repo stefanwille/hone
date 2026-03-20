@@ -1,5 +1,6 @@
 import { type } from "arktype";
 import { readdir, stat } from "node:fs/promises";
+import { join } from "node:path";
 
 export const ViewInputSchema = type({
   command: "/^view$/",
@@ -43,25 +44,62 @@ async function fileType(
   throw new Error(`Unknown file type at path: ${path}`);
 }
 
+async function listFilesRecursive(
+  dir: string,
+  files: string[],
+  depth: number,
+  maxDepth: number,
+): Promise<void> {
+  if (depth > maxDepth) return;
+  const entries = await readdir(dir);
+  for (const entry of entries) {
+    if (entry.startsWith(".")) continue;
+    const fullPath = join(dir, entry);
+    files.push(fullPath);
+    let stats;
+    try {
+      stats = await stat(fullPath);
+    } catch {
+      continue;
+    }
+    if (stats.isDirectory() && depth < maxDepth) {
+      await listFilesRecursive(fullPath, files, depth + 1, maxDepth);
+    }
+  }
+}
+
 async function viewDirectory(input: ViewInput): Promise<string> {
   if (input.view_range) {
-    return "Error: text editor view command on a directory does not support view_range";
+    return "Error: The `view_range` parameter is not allowed when `path` points to a directory.";
   }
-  const entries = await readdir(input.path);
-  const content = entries.join("\n");
+  const files: string[] = [];
+  await listFilesRecursive(input.path, files, 0, 1);
+  files.sort();
+  const content = files.join("\n");
   return truncateToMaxCharacters(content, input.max_characters);
 }
 
+function formatWithLineNumbers(lines: string[], initLine: number): string {
+  return lines
+    .map((line, i) => `${String(i + initLine).padStart(6)}\t${line}`)
+    .join("\n");
+}
+
 async function viewFile(input: ViewInput): Promise<string> {
-  let content = await Bun.file(input.path).text();
+  const raw = await Bun.file(input.path).text();
+  const lines = raw.split("\n");
+
+  let formatted: string;
   if (input.view_range) {
-    const lines = content.split("\n");
     const start = input.view_range[0] - 1;
     const end = input.view_range[1] === -1 ? undefined : input.view_range[1];
     const slicedLines = lines.slice(start, end);
-    content = slicedLines.join("\n");
+    formatted = formatWithLineNumbers(slicedLines, start + 1);
+  } else {
+    formatted = formatWithLineNumbers(lines, 1);
   }
 
+  const content = `Here's the result of running \`cat -n\` on ${input.path}:\n${formatted}\n`;
   return truncateToMaxCharacters(content, input.max_characters);
 }
 
