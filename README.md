@@ -1,8 +1,8 @@
 # Hone
 
-A terminal-based AI coding agent built from raw [Anthropic SDK](https://docs.anthropic.com/en/docs/) primitives, [Bun](https://bun.sh), and TypeScript. It runs an interactive REPL where you chat with Claude, and the model can execute bash commands on your machine autonomously through tool use.
+A terminal-based AI coding agent built from raw [Anthropic SDK](https://docs.anthropic.com/en/docs/) primitives, [Bun](https://bun.sh), and TypeScript. No frameworks, no abstractions — just the agentic loop, tool use, and LLM API mechanics, built directly on the raw SDK.
 
-**I'm honing my AI engineering skills by building Hone.** This project is a hands-on exploration of AI engineering concepts — agentic loops, tool use, prompt design, evaluations, and building real applications on top of LLM APIs, all constructed directly from raw SDK primitives without frameworks or abstractions. Feel free to poke around, learn from it, or use it as a starting point for your own experiments.
+Hone runs an interactive REPL where you chat with Claude, and the model can execute bash commands and edit files on your machine through tool use — all inside a sandboxed environment.
 
 ## What It Does
 
