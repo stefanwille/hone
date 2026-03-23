@@ -1,8 +1,8 @@
-# AI Coding Agent
+# Hone
 
-A terminal-based AI coding agent built from scratch with the [Anthropic Claude API](https://docs.anthropic.com/en/docs/), [Bun](https://bun.sh), and TypeScript. It runs an interactive REPL where you chat with Claude, and the model can execute bash commands on your machine autonomously through tool use.
+A terminal-based AI coding agent built from raw [Anthropic SDK](https://docs.anthropic.com/en/docs/) primitives, [Bun](https://bun.sh), and TypeScript. It runs an interactive REPL where you chat with Claude, and the model can execute bash commands on your machine autonomously through tool use.
 
-**This is a learning project.** I'm using it to explore AI engineering concepts hands-on — agentic loops, tool use, prompt design, and building real applications on top of LLM APIs. Feel free to poke around, learn from it, or use it as a starting point for your own experiments.
+**I'm honing my AI engineering skills by building Hone.** This project is a hands-on exploration of AI engineering concepts — agentic loops, tool use, prompt design, evaluations, and building real applications on top of LLM APIs, all constructed directly from raw SDK primitives without frameworks or abstractions. Feel free to poke around, learn from it, or use it as a starting point for your own experiments.
 
 ## What It Does
 
@@ -55,8 +55,8 @@ The agent follows a classic **agentic loop**:
 
 ```bash
 # Clone the repo
-git clone https://github.com/stefanwille/ai-coding-agent.git
-cd ai-coding-agent
+git clone https://github.com/stefanwille/hone.git
+cd hone
 
 # Install dependencies
 bun install
